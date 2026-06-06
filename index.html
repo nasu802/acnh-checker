@@ -303,6 +303,31 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 .chip-done::before { content: "✓ "; font-size: 11px; color: #bbb; }
 .chip-done:hover { border-color: #ff7043; background: #fff5f3; color: #e05030; }
 .chip-done:hover::before { color: #ff7043; }
+.chip-done.selected { background: #fff3e0; border-color: #ff9800; color: #e65100; box-shadow: 0 0 0 2px #ffcc80; }
+.chip-done.selected::before { content: "☑ "; color: #ff9800; }
+.select-bar {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  padding: 8px 10px; background: #fff8e1; border-radius: 10px;
+  border: 1.5px solid #ffe082;
+}
+.select-bar-count { font-size: 13px; font-weight: 700; color: #f57c00; flex: 1; }
+.select-del-btn {
+  padding: 5px 14px; border-radius: 8px; border: none;
+  background: #ff7043; color: white; font-size: 13px;
+  font-weight: 800; font-family: inherit; cursor: pointer;
+}
+.select-del-btn:disabled { background: #ccc; cursor: default; }
+.select-cancel-btn {
+  padding: 5px 12px; border-radius: 8px; border: 1.5px solid #ccc;
+  background: white; color: #666; font-size: 13px;
+  font-weight: 700; font-family: inherit; cursor: pointer;
+}
+.done-sel-btn {
+  font-size: 11px; padding: 2px 8px; border-radius: 6px;
+  border: 1.5px solid #ddd; background: white; color: #888;
+  font-weight: 700; font-family: inherit; cursor: pointer; margin-left: 6px;
+}
+.done-sel-btn:hover { border-color: #aaa; color: #444; }
 
 .progress-wrap { background: #eee; border-radius: 6px; height: 7px; overflow: hidden; margin: 10px 0 0; }
 .progress-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
@@ -683,6 +708,29 @@ let mode = 'kagu';
 let state = { kagu: { owned: {}, doneOpen: {} }, recipe: { owned: {}, doneOpen: {} }, music: { owned: {}, doneOpen: {} }, art: { owned: {}, doneOpen: {} }, fuku: { owned: {}, doneOpen: {} } };
 let currentCat = { kagu: 'すべて', recipe: 'すべて', music: 'すべて', art: 'すべて', fuku: 'すべて' };
 let search = '', partialMatch = false, searchScope = 'todo';
+let selectMode = false;
+let selectedItems = new Set();
+function enterSelectMode() { selectMode = true; selectedItems.clear(); render(); }
+function exitSelectMode() { selectMode = false; selectedItems.clear(); render(); }
+function toggleSelect(en) {
+  if (selectedItems.has(en)) selectedItems.delete(en);
+  else selectedItems.add(en);
+  // チップのUIだけ更新（全再描画しない）
+  document.querySelectorAll('.chip-done[data-en]').forEach(el => {
+    el.classList.toggle('selected', selectedItems.has(el.dataset.en));
+  });
+  const countEl = document.getElementById('selectCount');
+  if (countEl) countEl.textContent = selectedItems.size + '件選択中';
+  const delBtn = document.getElementById('selectDelBtn');
+  if (delBtn) delBtn.disabled = selectedItems.size === 0;
+}
+function deleteSelected() {
+  if (!selectedItems.size) return;
+  pushUndo();
+  for (const en of selectedItems) { delete state[mode].owned[en]; syncCheck(en, null); }
+  exitSelectMode();
+  save();
+}
 
 function load() {
   for (const m of ['kagu', 'recipe', 'music', 'art', 'fuku']) {
@@ -1202,7 +1250,6 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q) {
   }
 
   if (doneItems.length > 0) {
-    // 検索中かつ「収集済みも表示」なら展開して表示
     const forceOpen = q && searchScope === 'all';
     const isOpen = forceOpen || doneOpen[cat];
 
@@ -1210,19 +1257,51 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q) {
     doneDiv.className = 'done-section';
     const hdr = document.createElement('div');
     hdr.className = 'done-header';
-    hdr.onclick = () => toggleDone(cat);
+    const togSpan = document.createElement('span');
+    togSpan.id = 'dtog-' + cat;
+    togSpan.className = 'done-toggle';
+    togSpan.textContent = isOpen ? '▲ 閉じる' : '▼ 済みを見る';
+    togSpan.onclick = () => toggleDone(cat);
     hdr.innerHTML = '<span class="done-title">' + doneLabel + '</span>' +
-      '<span class="done-count">' + doneItems.length + ' 個</span>' +
-      '<span class="done-toggle" id="dtog-' + cat + '">' + (isOpen ? '▲ 閉じる' : '▼ 済みを見る') + '</span>';
+      '<span class="done-count">' + doneItems.length + ' 個</span>';
+    // 選択ボタン
+    const selBtn = document.createElement('button');
+    selBtn.className = 'done-sel-btn';
+    selBtn.textContent = selectMode ? 'キャンセル' : '選択';
+    selBtn.onclick = e => { e.stopPropagation(); selectMode ? exitSelectMode() : enterSelectMode(); };
+    hdr.appendChild(selBtn);
+    hdr.appendChild(togSpan);
     doneDiv.appendChild(hdr);
+
+    // 選択モード中のバー
+    if (selectMode) {
+      const bar = document.createElement('div');
+      bar.className = 'select-bar';
+      bar.innerHTML = '<span class="select-bar-count" id="selectCount">' + selectedItems.size + '件選択中</span>';
+      const allBtn = document.createElement('button');
+      allBtn.className = 'select-cancel-btn';
+      allBtn.textContent = '全選択';
+      allBtn.onclick = () => { doneItems.forEach(i => selectedItems.add(i.en)); document.querySelectorAll('.chip-done[data-en]').forEach(el => el.classList.add('selected')); document.getElementById('selectCount').textContent = selectedItems.size + '件選択中'; document.getElementById('selectDelBtn').disabled = false; };
+      const delBtn = document.createElement('button');
+      delBtn.id = 'selectDelBtn';
+      delBtn.className = 'select-del-btn';
+      delBtn.textContent = '削除';
+      delBtn.disabled = selectedItems.size === 0;
+      delBtn.onclick = deleteSelected;
+      bar.appendChild(allBtn);
+      bar.appendChild(delBtn);
+      doneDiv.appendChild(bar);
+    }
+
     const doneGrid = document.createElement('div');
     doneGrid.className = 'done-items' + (isOpen ? ' open' : '');
     doneGrid.id = 'done-' + cat;
     for (const item of doneItems) {
       const chip = document.createElement('span');
-      chip.className = 'chip chip-done';
+      chip.className = 'chip chip-done' + (selectedItems.has(item.en) ? ' selected' : '');
+      chip.dataset.en = item.en;
       chip.textContent = item.ja;
-      chip.onclick = () => uncheck(item.en);
+      chip.onclick = () => selectMode ? toggleSelect(item.en) : uncheck(item.en);
       doneGrid.appendChild(chip);
     }
     doneDiv.appendChild(doneGrid);
