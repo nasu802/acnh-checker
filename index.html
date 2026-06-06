@@ -641,7 +641,7 @@ body.mode-hhp { background: #e0f2f1; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607g</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607h</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -1524,7 +1524,7 @@ function jumpToKana(chars, btn) {
   setTimeout(() => btn.classList.remove('hit'), 800);
 }
 
-// 濁点・半濁点を除去＋カタカナ→ひらがな変換（か=が=カ=ガ、は=ば=ぱ など）
+// カタカナ→ひらがな変換 + 長音符除去（辞書準拠: か≠が、カ=か）
 function normalizeDakuten(s) {
   return [...s.toLowerCase()].map(c => {
     let cp = c.charCodeAt(0);
@@ -1532,12 +1532,7 @@ function normalizeDakuten(s) {
     if (cp === 0x30FC) return '';
     // カタカナ→ひらがな (ァ-ン: 30A1-30F6)
     if (cp >= 0x30A1 && cp <= 0x30F6) cp -= 0x60;
-    // ひらがな濁音(304C〜3069の偶数)→清音 (が→か, ざ→さ, だ→た, など)
-    if (cp >= 0x304C && cp <= 0x3069 && cp % 2 === 0) cp -= 1;
-    // は行濁音(ば行: ば,び,ぶ,べ,ぼ)→清音
-    if ([0x3070,0x3073,0x3076,0x3079,0x307C].includes(cp)) cp -= 1;
-    // ひらがな半濁音(ぱ行: ぱ,ぴ,ぷ,ぺ,ぽ)→清音
-    if ([0x3071,0x3074,0x3077,0x307A,0x307D].includes(cp)) cp -= 2;
+    // 濁点・半濁点はそのまま保持（辞書準拠: が≠か）
     return String.fromCharCode(cp);
   }).join('');
 }
