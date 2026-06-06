@@ -616,6 +616,7 @@ body.mode-fuku { background: #fce4ec; }
   <select id="searchScope">
     <option value="todo">未収集のみ</option>
     <option value="all">収集済みも表示</option>
+    <option value="done">収集済みのみ</option>
   </select>
   <label class="partial-label">
     <input type="checkbox" id="partialCheck">
@@ -1236,27 +1237,29 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q) {
   const doneLabel = mode === 'kagu' ? '✅ 収集済み' : mode === 'recipe' ? '✅ 習得済み' : mode === 'art' ? '✅ 寄贈済み' : '✅ 入手済み';
   const emptyMsg  = mode === 'kagu' ? '🎉 すべて収集済み！' : mode === 'recipe' ? '🎉 すべて習得済み！' : mode === 'art' ? '🎉 すべて寄贈済み！' : '🎉 すべて入手済み！';
 
-  if (todoItems.length > 0) {
-    const grid = document.createElement('div');
-    grid.className = 'items-grid';
-    for (const item of todoItems) {
-      const chip = document.createElement('span');
-      chip.className = 'chip chip-todo';
-      chip.textContent = item.ja;
-      chip.title = item.cat || '';
-      chip.onclick = () => check(item.en, chip);
-      grid.appendChild(chip);
+  if (searchScope !== 'done') {
+    if (todoItems.length > 0) {
+      const grid = document.createElement('div');
+      grid.className = 'items-grid';
+      for (const item of todoItems) {
+        const chip = document.createElement('span');
+        chip.className = 'chip chip-todo';
+        chip.textContent = item.ja;
+        chip.title = item.cat || '';
+        chip.onclick = () => check(item.en, chip);
+        grid.appendChild(chip);
+      }
+      sec.appendChild(grid);
+    } else if (!q) {
+      const em = document.createElement('div');
+      em.className = 'empty';
+      em.textContent = emptyMsg;
+      sec.appendChild(em);
     }
-    sec.appendChild(grid);
-  } else if (!q) {
-    const em = document.createElement('div');
-    em.className = 'empty';
-    em.textContent = emptyMsg;
-    sec.appendChild(em);
   }
 
   if (doneItems.length > 0) {
-    const forceOpen = q && searchScope === 'all';
+    const forceOpen = searchScope === 'done' || (q && searchScope === 'all');
     const isOpen = forceOpen || doneOpen[cat];
 
     const doneDiv = document.createElement('div');
