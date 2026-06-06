@@ -858,6 +858,7 @@ function renderPartySummary() {
 
 let partyItemCat = 'すべて';
 let partySelectedUser = null;
+let partyUserView = 'todo'; // 'todo' | 'done'
 
 function buildPartyItemControls() {
   // モード選択
@@ -884,23 +885,25 @@ function buildPartyItemControls() {
     btn.innerHTML = '<span class="dot" style="background:' + color + '"></span>' + uname;
     btn.onclick = () => {
       partySelectedUser = (partySelectedUser === uname) ? null : uname;
+      partyUserView = 'todo';
       buildPartyItemControls();
       renderPartyItems();
     };
     userEl.appendChild(btn);
   }
-  // フィルター（ユーザー選択中は非表示）
-  const filters = [
-    { key: 'nobody',   label: '誰も未入手' },
-    { key: 'some',     label: '誰かが持ってる' },
-    { key: 'everyone', label: '全員持ってる' },
-    { key: 'all',      label: '全部' },
-  ];
   const filterEl = document.getElementById('partyFilterBtns');
-  filterEl.style.display = partySelectedUser ? 'none' : '';
   filterEl.innerHTML = '';
-  if (!partySelectedUser) {
-    for (const f of filters) {
+  if (partySelectedUser) {
+    // ユーザー選択中：未入手/収集済みトグル
+    for (const f of [{key:'todo', label:'未入手'}, {key:'done', label:'収集済み'}]) {
+      const btn = document.createElement('button');
+      btn.className = 'party-filter-btn' + (partyUserView === f.key ? ' active' : '');
+      btn.textContent = f.label;
+      btn.onclick = () => { partyUserView = f.key; buildPartyItemControls(); renderPartyItems(); };
+      filterEl.appendChild(btn);
+    }
+  } else {
+    for (const f of [{key:'nobody',label:'誰も未入手'},{key:'some',label:'誰かが持ってる'},{key:'everyone',label:'全員持ってる'},{key:'all',label:'全部'}]) {
       const btn = document.createElement('button');
       btn.className = 'party-filter-btn' + (f.key === partyItemFilter ? ' active' : '');
       btn.textContent = f.label;
@@ -933,8 +936,8 @@ function renderPartyItems() {
   const filtered = cats.filter(item => {
     if (q && !item.ja.toLowerCase().includes(q) && !item.en.toLowerCase().includes(q)) return false;
     if (partySelectedUser) {
-      // 選択ユーザーの未入手アイテムだけ表示
-      return !(partyAllData[partySelectedUser][partyItemMode] || new Set()).has(item.en);
+      const has = (partyAllData[partySelectedUser][partyItemMode] || new Set()).has(item.en);
+      return partyUserView === 'done' ? has : !has;
     }
     const haveCount = partyUserNames.filter(u => (partyAllData[u][partyItemMode] || new Set()).has(item.en)).length;
     if (partyItemFilter === 'nobody')   return haveCount === 0;
