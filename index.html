@@ -555,12 +555,11 @@ body.mode-fuku { background: #fce4ec; }
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
   <div class="party-sheet">
     <div class="party-sheet-title">みんなの進捗<button class="party-close" onclick="closeParty()">✕</button></div>
-    <div class="party-tabs">
-      <button id="partyTabItems"   class="party-tab-btn active"  onclick="setPartyTab('items')">アイテム</button>
-      <button id="partyTabSummary" class="party-tab-btn"         onclick="setPartyTab('summary')">進捗</button>
+    <div id="partySummaryToggle" style="cursor:pointer;font-size:13px;font-weight:700;color:#888;margin-bottom:10px;display:flex;align-items:center;gap:6px" onclick="togglePartySummary()">
+      <span id="partySummaryArrow">▶</span> 進捗を見る
     </div>
-    <div id="partySummaryView"></div>
-    <div id="partyItemsView" style="display:none">
+    <div id="partySummaryView" style="display:none"></div>
+    <div id="partyItemsView">
       <div class="party-mode-sel" id="partyModeSel"></div>
       <div class="party-user-row" id="partyUserBtns"></div>
       <div class="party-filter" id="partyFilterBtns"></div>
@@ -752,6 +751,18 @@ async function loadFromCloud() {
     document.getElementById('syncIndicator').textContent = '!';
   }
 }
+async function deleteUser(name) {
+  if (!confirm(name + ' のデータを削除しますか？')) return;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/progress?username=eq.' + encodeURIComponent(name), {
+      method: 'DELETE', headers: DB_HEADERS
+    });
+    delete partyAllData[name];
+    partyUserNames = partyUserNames.filter(u => u !== name);
+    renderPartySummary();
+    if (partyTab === 'items') { buildPartyItemControls(); renderPartyItems(); }
+  } catch(e) { alert('削除に失敗しました'); }
+}
 function changeUser() {
   const name = prompt('ユーザー名を変更します。新しい名前を入力してください：', currentUser);
   if (name && name.trim()) {
@@ -777,6 +788,7 @@ const USER_PALETTE = ['#5a9e38','#4488cc','#d07040','#e91e8c','#7b4fa6','#00897b
 
 let partyAllData  = {};   // username → {mode → Set<en>}
 let partyTab       = 'items';
+let partySummaryOpen = false;
 let partyItemMode  = 'kagu';
 let partyItemFilter = 'nobody'; // 'all' | 'nobody' | 'some' | 'everyone'
 let partyUserColors = {};
@@ -797,9 +809,6 @@ function buildPartyData(rows) {
 
 async function openParty() {
   document.getElementById('partyOverlay').style.display = 'flex';
-  document.getElementById('partySummaryView').innerHTML = '<div class="party-loading">読み込み中...</div>';
-  setPartyTab(partyTab);
-
   let rows;
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/progress?select=username,mode,owned', { headers: DB_HEADERS });
@@ -808,7 +817,8 @@ async function openParty() {
   } catch { rows = localRows(); }
   buildPartyData(rows);
   renderPartySummary();
-  if (partyTab === 'items') renderPartyItems();
+  buildPartyItemControls();
+  renderPartyItems();
 }
 function localRows() {
   return PARTY_MODES.map(m => ({ username: currentUser, mode: m.key, owned: state[m.key].owned }));
@@ -817,16 +827,11 @@ function closeParty() {
   document.getElementById('partyOverlay').style.display = 'none';
 }
 
-function setPartyTab(tab) {
-  partyTab = tab;
-  document.getElementById('partyTabSummary').className = 'party-tab-btn' + (tab === 'summary' ? ' active' : '');
-  document.getElementById('partyTabItems').className   = 'party-tab-btn' + (tab === 'items'   ? ' active' : '');
-  document.getElementById('partySummaryView').style.display = tab === 'summary' ? '' : 'none';
-  document.getElementById('partyItemsView').style.display   = tab === 'items'   ? '' : 'none';
-  if (tab === 'items' && partyUserNames.length) {
-    buildPartyItemControls();
-    renderPartyItems();
-  }
+function setPartyTab(tab) { /* 互換用 */ }
+function togglePartySummary() {
+  partySummaryOpen = !partySummaryOpen;
+  document.getElementById('partySummaryView').style.display = partySummaryOpen ? '' : 'none';
+  document.getElementById('partySummaryArrow').textContent = partySummaryOpen ? '▼' : '▶';
 }
 
 function renderPartySummary() {
@@ -838,7 +843,17 @@ function renderPartySummary() {
     const row = document.createElement('div');
     row.className = 'party-row' + (isMe ? ' is-me' : '');
     const dot = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + partyUserColors[name] + ';margin-right:5px"></span>';
-    row.innerHTML = '<div class="party-name">' + dot + name + (isMe ? ' <span class="party-me-tag">自分</span>' : '') + '</div>';
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'party-name';
+    nameDiv.innerHTML = dot + name + (isMe ? ' <span class="party-me-tag">自分</span>' : '');
+    if (!isMe) {
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '削除';
+      delBtn.style.cssText = 'margin-left:auto;font-size:11px;padding:2px 8px;border-radius:6px;border:1.5px solid #ffcdd2;background:white;color:#e53935;cursor:pointer;font-family:inherit;font-weight:700';
+      delBtn.onclick = () => deleteUser(name);
+      nameDiv.appendChild(delBtn);
+    }
+    row.appendChild(nameDiv);
     const modes = document.createElement('div');
     modes.className = 'party-modes';
     for (const m of PARTY_MODES) {
