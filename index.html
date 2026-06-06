@@ -907,13 +907,6 @@ function renderPartySummary() {
     const nameDiv = document.createElement('div');
     nameDiv.className = 'party-name';
     nameDiv.innerHTML = dot + name + (isMe ? ' <span class="party-me-tag">自分</span>' : '');
-    if (!isMe) {
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '削除';
-      delBtn.style.cssText = 'margin-left:auto;font-size:11px;padding:2px 8px;border-radius:6px;border:1.5px solid #ffcdd2;background:white;color:#e53935;cursor:pointer;font-family:inherit;font-weight:700';
-      delBtn.onclick = () => deleteUser(name);
-      nameDiv.appendChild(delBtn);
-    }
     row.appendChild(nameDiv);
     const modes = document.createElement('div');
     modes.className = 'party-modes';
