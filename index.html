@@ -868,7 +868,7 @@ function buildPartyData(rows) {
   });
 }
 
-async function openParty() {
+async function openParty(focusUser) {
   document.getElementById('partyOverlay').style.display = 'flex';
   let rows;
   try {
@@ -877,6 +877,7 @@ async function openParty() {
     rows = await res.json();
   } catch { rows = localRows(); }
   buildPartyData(rows);
+  if (focusUser) partySelectedUser = focusUser;
   renderPartySummary();
   buildPartyItemControls();
   renderPartyItems();
@@ -1436,7 +1437,7 @@ function loadHeaderUsers() {
       el.innerHTML = names.map((name, i) => {
         const color = USER_PALETTE[i % USER_PALETTE.length];
         const isSelf = name === currentUser;
-        return `<span class="header-user-dot"><span class="dot" style="background:${color};${isSelf ? 'border-color:#fff;border-width:2px;' : ''}"></span>${name}</span>`;
+        return `<span class="header-user-dot" onclick="openParty('${name}')" style="cursor:pointer"><span class="dot" style="background:${color};${isSelf ? 'border-color:#fff;border-width:2px;' : ''}"></span>${name}</span>`;
       }).join('');
     })
     .catch(() => {});
