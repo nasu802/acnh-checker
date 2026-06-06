@@ -1166,8 +1166,9 @@ function renderPartyItems() {
   const cats = partyItemCat === 'すべて' ? Object.values(DATA[partyItemMode]).flat() : (DATA[partyItemMode][partyItemCat] || []);
   const n = partyUserNames.length;
 
+  const nq = normalizeDakuten(q);
   const filtered = cats.filter(item => {
-    if (q && !item.ja.toLowerCase().includes(q) && !item.en.toLowerCase().includes(q)) return false;
+    if (q && !normalizeDakuten(item.ja).includes(nq) && !item.en.toLowerCase().includes(q)) return false;
     if (partySelectedUser) {
       const has = (partyAllData[partySelectedUser][partyItemMode] || new Set()).has(item.en);
       return partyUserView === 'done' ? has : !has;
