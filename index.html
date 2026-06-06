@@ -317,8 +317,7 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 .chip-done:hover::before { color: #ff7043; }
 .chip-done.selected { background: #fff3e0; border-color: #ff9800; color: #e65100; box-shadow: 0 0 0 2px #ffcc80; }
 .chip-done.selected::before { content: "☑ "; color: #ff9800; }
-.chip-new { border-color: #5a9e38 !important; background: #edfae0 !important; color: #2a6010 !important; }
-.chip-new::after { content: "NEW"; font-size: 9px; background: #5a9e38; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle; font-weight: 800; }
+.chip-new::after { content: "NEW"; font-size: 9px; background: currentColor; color: white; padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle; font-weight: 800; opacity: 0.85; }
 /* 最近ページ */
 .recent-section { padding: 14px 16px; }
 .recent-date-label { font-size: 12px; font-weight: 800; color: #999; margin: 12px 0 6px; }
@@ -746,12 +745,27 @@ let search = '', partialMatch = false, searchScope = 'todo';
 let selectMode = false;
 let selectedItems = new Set();
 let showNew = localStorage.getItem('acnh_show_new') !== 'false';
-const NEW_THRESHOLD = 2 * 60 * 60 * 1000; // 2時間以内をNEWとみなす
+const NEW_THRESHOLD = 7 * 24 * 60 * 60 * 1000; // 1週間以内をNEWとみなす
 function toggleNewHighlight() {
   showNew = !showNew;
   localStorage.setItem('acnh_show_new', showNew);
-  document.getElementById('newToggleBtn').className = 'new-toggle-btn' + (showNew ? '' : ' off');
   render();
+}
+function getRecentStyle(ts) {
+  const age = Date.now() - ts;
+  if (age >= NEW_THRESHOLD) return null;
+  const ratio = age / NEW_THRESHOLD; // 0=今, 1=1週間前
+  // hue: 130(緑) → 45(黄) → 20(オレンジ)
+  const hue = Math.round(130 - ratio * 110);
+  const sat = Math.round(75 - ratio * 20); // 75% → 55%
+  const lBorder = Math.round(42 + ratio * 10); // 42% → 52%
+  const lBg = Math.round(93 + ratio * 4);      // 93% → 97%
+  const lText = Math.round(22 + ratio * 20);   // 22% → 42%
+  return {
+    borderColor: `hsl(${hue},${sat}%,${lBorder}%)`,
+    background:  `hsl(${hue},${sat}%,${lBg}%)`,
+    color:       `hsl(${hue},${sat}%,${lText}%)`,
+  };
 }
 function enterSelectMode() { selectMode = true; selectedItems.clear(); render(); }
 function exitSelectMode() { selectMode = false; selectedItems.clear(); render(); }
@@ -1340,14 +1354,19 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q) {
     const doneGrid = document.createElement('div');
     doneGrid.className = 'done-items' + (isOpen ? ' open' : '');
     doneGrid.id = 'done-' + cat;
-    const now = Date.now();
     const sortedDone = [...doneItems].sort((a, b) => owned[b.en] - owned[a.en]);
     for (const item of sortedDone) {
-      const isNew = showNew && (now - owned[item.en]) < NEW_THRESHOLD;
+      const style = showNew ? getRecentStyle(owned[item.en]) : null;
+      const isNew = !!style;
       const chip = document.createElement('span');
       chip.className = 'chip chip-done' + (selectedItems.has(item.en) ? ' selected' : '') + (isNew ? ' chip-new' : '');
       chip.dataset.en = item.en;
       chip.textContent = item.ja;
+      if (style) {
+        chip.style.borderColor = style.borderColor;
+        chip.style.background  = style.background;
+        chip.style.color       = style.color;
+      }
       chip.onclick = () => selectMode ? toggleSelect(item.en) : uncheck(item.en);
       doneGrid.appendChild(chip);
     }
