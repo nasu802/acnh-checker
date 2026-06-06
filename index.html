@@ -1567,20 +1567,24 @@ document.addEventListener('keydown', e => {
   }
 });
 // ユーザー初期設定
+function renderHeaderUsers(names) {
+  const el = document.getElementById('headerUsers');
+  if (!el) return;
+  const others = names.filter(n => n !== currentUser).sort();
+  el.innerHTML = others.map((name, i) => {
+    const color = USER_PALETTE[i % USER_PALETTE.length];
+    return `<span class="header-user-dot" onclick="openParty('${name}')" style="cursor:pointer"><span class="dot" style="background:${color}"></span>${name}</span>`;
+  }).join('');
+}
 function loadHeaderUsers() {
   fetch(SUPABASE_URL + '/rest/v1/progress?select=username', { headers: DB_HEADERS })
-    .then(r => r.ok ? r.json() : [])
+    .then(r => r.ok ? r.json() : null)
     .then(rows => {
-      const names = [...new Set(rows.map(r => r.username))].filter(n => n !== currentUser).sort();
-      const el = document.getElementById('headerUsers');
-      if (!el) return;
-      el.innerHTML = names.map((name, i) => {
-        const color = USER_PALETTE[i % USER_PALETTE.length];
-        const isSelf = name === currentUser;
-        return `<span class="header-user-dot" onclick="openParty('${name}')" style="cursor:pointer"><span class="dot" style="background:${color};${isSelf ? 'border-color:#fff;border-width:2px;' : ''}"></span>${name}</span>`;
-      }).join('');
+      if (!rows) return;
+      const names = [...new Set(rows.map(r => r.username))];
+      renderHeaderUsers(names);
     })
-    .catch(() => {});
+    .catch(e => console.error('loadHeaderUsers failed', e));
 }
 
 const RECENT_MODE_LABELS = { kagu: '家具', recipe: 'レシピ', music: 'とたけけ', art: '美術品', fuku: '服' };
@@ -1673,7 +1677,7 @@ function startApp() {
   render();
   // CDKロード完了後にクラウド同期（ローカル表示をブロックしない）
   initSupabase(() => {
-    if (currentUser) loadFromCloud().then(() => render());
+    if (currentUser) loadFromCloud().then(() => { render(); loadHeaderUsers(); });
   });
   loadHeaderUsers();
 }
