@@ -973,7 +973,7 @@ const PARTY_TOTALS = {};
 for (const m of PARTY_MODES) {
   PARTY_TOTALS[m.key] = Object.values(DATA[m.key]).flat().length;
 }
-const USER_PALETTE = ['#5a9e38','#4488cc','#d07040','#e91e8c','#7b4fa6','#00897b','#e53935','#f57c00','#795548','#607d8b'];
+const USER_PALETTE = ['#ffffff','#ffe066','#ffb3de','#b3e0ff','#ffd0a0','#d4b3ff','#b3ffd6','#ffb3b3','#c8f0ff','#ffe6b3'];
 
 let partyAllData  = {};   // username → {mode → Set<en>}
 let partyTab       = 'items';
@@ -1570,18 +1570,25 @@ document.addEventListener('keydown', e => {
 function renderHeaderUsers(names) {
   const el = document.getElementById('headerUsers');
   if (!el) return;
-  const others = names.filter(n => n !== currentUser).sort();
+  const others = names.filter(n => n && n !== currentUser).sort();
+  if (!others.length) return;
   el.innerHTML = others.map((name, i) => {
     const color = USER_PALETTE[i % USER_PALETTE.length];
-    return `<span class="header-user-dot" onclick="openParty('${name}')" style="cursor:pointer"><span class="dot" style="background:${color}"></span>${name}</span>`;
+    return `<span class="header-user-dot" onclick="openParty('${name}')" style="cursor:pointer;color:rgba(255,255,255,0.95)"><span class="dot" style="background:${color}"></span>${name}</span>`;
   }).join('');
 }
 function loadHeaderUsers() {
+  // キャッシュがあれば先に表示
+  try {
+    const cached = JSON.parse(localStorage.getItem('acnh_known_users') || '[]');
+    if (cached.length) renderHeaderUsers(cached);
+  } catch {}
   fetch(SUPABASE_URL + '/rest/v1/progress?select=username', { headers: DB_HEADERS })
     .then(r => r.ok ? r.json() : null)
     .then(rows => {
       if (!rows) return;
       const names = [...new Set(rows.map(r => r.username))];
+      localStorage.setItem('acnh_known_users', JSON.stringify(names));
       renderHeaderUsers(names);
     })
     .catch(e => console.error('loadHeaderUsers failed', e));
