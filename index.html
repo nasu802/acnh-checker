@@ -1355,7 +1355,7 @@ function render() {
 
     const sec = document.createElement('div');
     sec.className = 'section-block';
-    appendTodoDone(sec, todoItems, doneItems, 'すべて', q);
+    appendTodoDone(sec, todoItems, doneItems, 'すべて', q, owned);
     main.appendChild(sec);
     return;
   }
@@ -1385,12 +1385,12 @@ function render() {
     bar.innerHTML = '<div class="progress-fill" style="width:' + pct + '%"></div>';
     sec.appendChild(bar);
 
-    appendTodoDone(sec, todoItems, doneItems, cat, q);
+    appendTodoDone(sec, todoItems, doneItems, cat, q, owned);
     main.appendChild(sec);
   }
 }
 
-function appendTodoDone(sec, todoItems, doneItems, cat, q) {
+function appendTodoDone(sec, todoItems, doneItems, cat, q, owned) {
   const doneOpen = state[mode].doneOpen;
   const doneLabel = mode === 'kagu' ? '✅ 収集済み' : mode === 'recipe' ? '✅ 習得済み' : mode === 'art' ? '✅ 寄贈済み' : '✅ 入手済み';
   const emptyMsg  = mode === 'kagu' ? '🎉 すべて収集済み！' : mode === 'recipe' ? '🎉 すべて習得済み！' : mode === 'art' ? '🎉 すべて寄贈済み！' : '🎉 すべて入手済み！';
