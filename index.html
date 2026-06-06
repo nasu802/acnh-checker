@@ -62,8 +62,7 @@ header { flex-wrap: wrap; }
 header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.03em; }
 .header-stats { font-size: 13px; opacity: 0.95; margin-left: auto; font-weight: 700; }
 .header-users {
-  width: 100%; display: flex; gap: 8px; flex-wrap: wrap;
-  padding-top: 4px; align-items: center;
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
 }
 .header-user-dot {
   display: flex; align-items: center; gap: 4px;
@@ -1431,7 +1430,7 @@ function loadHeaderUsers() {
   fetch(SUPABASE_URL + '/rest/v1/progress?select=username', { headers: DB_HEADERS })
     .then(r => r.ok ? r.json() : [])
     .then(rows => {
-      const names = [...new Set(rows.map(r => r.username))].sort();
+      const names = [...new Set(rows.map(r => r.username))].filter(n => n !== currentUser).sort();
       const el = document.getElementById('headerUsers');
       if (!el) return;
       el.innerHTML = names.map((name, i) => {
