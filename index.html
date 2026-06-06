@@ -634,7 +634,7 @@ body.mode-fuku { background: #fce4ec; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607b</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607c</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -670,7 +670,7 @@ body.mode-fuku { background: #fce4ec; }
   </select>
   <button class="new-toggle-btn" id="newToggleBtn" onclick="toggleNewHighlight()">NEW表示</button>
   <label class="partial-label">
-    <input type="checkbox" id="partialCheck">
+    <input type="checkbox" id="partialCheck" checked>
     部分一致
   </label>
 </div>
@@ -773,7 +773,7 @@ let syncTimer = null;
 let mode = 'kagu';
 let state = { kagu: { owned: {}, doneOpen: {} }, recipe: { owned: {}, doneOpen: {} }, music: { owned: {}, doneOpen: {} }, art: { owned: {}, doneOpen: {} }, fuku: { owned: {}, doneOpen: {} } };
 let currentCat = { kagu: 'すべて', recipe: 'すべて', music: 'すべて', art: 'すべて', fuku: 'すべて' };
-let search = '', partialMatch = false, searchScope = 'todo';
+let search = '', partialMatch = true, searchScope = 'todo';
 let selectMode = false;
 let selectedItems = new Set();
 let viewingUser = null;
@@ -1579,6 +1579,8 @@ function jumpToKana(chars, btn) {
 function normalizeDakuten(s) {
   return [...s.toLowerCase()].map(c => {
     let cp = c.charCodeAt(0);
+    // 長音符(ー U+30FC)を除去
+    if (cp === 0x30FC) return '';
     // カタカナ→ひらがな (ァ-ン: 30A1-30F6)
     if (cp >= 0x30A1 && cp <= 0x30F6) cp -= 0x60;
     // ひらがな濁音(304C〜3069の偶数)→清音 (が→か, ざ→さ, だ→た, など)
