@@ -1333,6 +1333,10 @@ function toggleDone(cat) {
 }
 
 function renderTabs() {
+  if (mode === 'recent') {
+    document.getElementById('catTabs').innerHTML = '';
+    return;
+  }
   const items = DATA[mode];
   const cats = Object.keys(items);
   const owned = state[mode].owned;
