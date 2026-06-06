@@ -19,9 +19,6 @@ body {
 .mode-tabs {
   display: flex;
   background: #3d6b2a;
-  position: sticky;
-  top: 0;
-  z-index: 200;
   border-bottom: 3px solid #2d5020;
 }
 .mode-tab {
@@ -46,6 +43,13 @@ body {
 }
 .mode-tab:hover:not(.active) { color: rgba(255,255,255,0.88); }
 
+/* スティッキーヘッダーラッパー */
+#stickyWrapper {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
 /* ヘッダー */
 header {
   color: white;
@@ -53,9 +57,6 @@ header {
   display: flex;
   align-items: center;
   gap: 12px;
-  position: sticky;
-  top: 48px;
-  z-index: 100;
   box-shadow: 0 3px 0 rgba(0,0,0,0.15);
 }
 header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.03em; flex-shrink: 0; }
@@ -63,7 +64,7 @@ header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.03em; flex-shri
 #userSwitcher {
   display: flex; gap: 6px; padding: 6px 16px;
   background: #2d5020; border-bottom: 2px solid #1e3c14;
-  position: sticky; top: 48px; z-index: 110; overflow-x: auto;
+  overflow-x: auto;
   scrollbar-width: none;
 }
 #userSwitcher::-webkit-scrollbar { display: none; }
@@ -101,9 +102,6 @@ header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.03em; flex-shri
   gap: 8px;
   align-items: center;
   border-bottom: 1px solid #ddd;
-  position: sticky;
-  top: 100px;
-  z-index: 99;
 }
 .search-wrap {
   position: relative;
@@ -173,9 +171,6 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   gap: 2px;
   overflow-x: auto;
   border-bottom: 2px solid #e0e0e0;
-  position: sticky;
-  top: 146px;
-  z-index: 98;
   scrollbar-width: none;
 }
 .cat-tabs::-webkit-scrollbar { display: none; }
@@ -214,9 +209,6 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   gap: 4px;
   overflow-x: auto;
   border-bottom: 1px solid #e8e8e8;
-  position: sticky;
-  top: 192px;
-  z-index: 97;
   scrollbar-width: none;
 }
 .kana-nav::-webkit-scrollbar { display: none; }
@@ -522,19 +514,19 @@ body.mode-hhp { background: #e0f2f1; }
 }
 .party-sheet {
   background: white; border-radius: 20px 20px 0 0;
-  width: 100%; max-width: 640px; height: 85vh;
+  width: 100%; max-width: 640px; height: 94vh;
   display: flex; flex-direction: column; overflow: hidden;
-  padding: 20px 18px 0;
+  padding: 14px 14px 0;
   box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
 }
 .party-sheet-title { flex-shrink: 0; }
-#partySummaryToggle { flex-shrink: 0; }
-#partySummaryView { flex-shrink: 0; overflow-y: auto; max-height: 35vh; }
+#partySummaryToggle { flex-shrink: 0; margin-bottom: 6px !important; }
+#partySummaryView { flex-shrink: 0; overflow-y: auto; max-height: 28vh; }
 #partyItemsView { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 #partyControls { flex-shrink: 0; }
 #partyItemList { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 32px; }
 .party-sheet-title {
-  font-size: 16px; font-weight: 800; margin-bottom: 14px;
+  font-size: 15px; font-weight: 800; margin-bottom: 8px;
   display: flex; align-items: center; gap: 8px;
 }
 .party-close {
@@ -543,24 +535,24 @@ body.mode-hhp { background: #e0f2f1; }
   display: flex; align-items: center; justify-content: center;
 }
 .party-row {
-  border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+  border-radius: 12px; padding: 8px 10px; margin-bottom: 6px;
   background: #f8f9f8; border: 1.5px solid #e8e8e8;
 }
 .party-row.is-me { border-color: #5a9e38; background: #f0fae5; }
 .party-name {
-  font-size: 14px; font-weight: 800; margin-bottom: 8px;
-  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 800; margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
 }
 .party-me-tag {
   font-size: 10px; background: #5a9e38; color: white;
   padding: 2px 7px; border-radius: 8px; font-weight: 700;
 }
 .party-modes { display: flex; flex-direction: column; gap: 5px; }
-.party-mode-row { display: flex; align-items: center; gap: 8px; }
-.party-mode-label { font-size: 12px; color: #666; font-weight: 700; width: 80px; flex-shrink: 0; }
-.party-bar-wrap { flex: 1; background: #e8e8e8; border-radius: 4px; height: 8px; overflow: hidden; }
+.party-mode-row { display: flex; align-items: center; gap: 6px; }
+.party-mode-label { font-size: 11px; color: #666; font-weight: 700; width: 52px; flex-shrink: 0; }
+.party-bar-wrap { flex: 1; background: #e8e8e8; border-radius: 3px; height: 6px; overflow: hidden; }
 .party-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-.party-pct { font-size: 11px; color: #888; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
+.party-pct { font-size: 10px; color: #888; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
 .party-no-data { text-align: center; color: #aaa; font-size: 14px; padding: 20px 0; font-weight: 700; }
 .party-loading { text-align: center; color: #aaa; font-size: 14px; padding: 20px 0; }
 /* パーティータブ切替 */
@@ -572,41 +564,41 @@ body.mode-hhp { background: #e0f2f1; }
 }
 .party-tab-btn.active { border-color: #5a9e38; background: #f0fae5; color: #3d7228; }
 /* アイテムビュー */
-.party-mode-sel { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.party-mode-sel { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 6px; }
 .party-mode-btn {
-  padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700;
   font-family: inherit; cursor: pointer; border: 1.5px solid #ddd;
   background: white; color: #666; transition: all 0.12s; white-space: nowrap;
 }
 .party-mode-btn.active { color: white; border-color: transparent; }
-.party-filter { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.party-filter { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 4px; }
 .party-filter-btn {
-  padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 700;
   font-family: inherit; cursor: pointer; border: 1.5px solid #ddd;
   background: white; color: #666; transition: all 0.12s;
 }
 .party-filter-btn.active { background: #333; border-color: #333; color: white; }
 .party-item-search {
-  width: 100%; padding: 7px 12px; border: 1.5px solid #ddd;
-  border-radius: 10px; font-size: 13px; font-family: inherit;
-  margin-bottom: 6px; outline: none; box-sizing: border-box;
+  width: 100%; padding: 6px 10px; border: 1.5px solid #ddd;
+  border-radius: 10px; font-size: 12px; font-family: inherit;
+  margin-bottom: 4px; outline: none; box-sizing: border-box;
 }
 .party-item-search:focus { border-color: #5a9e38; }
-.party-count-note { font-size: 12px; color: #999; margin-bottom: 6px; font-weight: 700; }
+.party-count-note { font-size: 11px; color: #999; margin-bottom: 3px; font-weight: 700; }
 .party-item-list { display: flex; flex-direction: column; gap: 3px; }
 .party-item-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px; background: #f8f8f8; border-radius: 10px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px; background: #f8f8f8; border-radius: 8px;
 }
-.party-item-name { flex: 1; font-size: 13px; font-weight: 700; color: #333; }
+.party-item-name { flex: 1; font-size: 12px; font-weight: 700; color: #333; }
 .party-dots { display: flex; gap: 3px; flex-shrink: 0; }
 .party-dot {
-  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 800; color: white;
+  font-size: 8px; font-weight: 800; color: white;
 }
 .party-dot.not { background: #eee !important; color: #ccc; }
-.party-user-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.party-user-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
 .party-user-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 5px 12px 5px 6px; border-radius: 20px;
@@ -638,6 +630,7 @@ body.mode-hhp { background: #e0f2f1; }
   ⚠️ Supabase未設定のためローカル保存のみです。
   <a href="#" onclick="showSupabaseHelp()">設定方法を見る</a>
 </div>
+<div id="stickyWrapper">
 <div class="mode-tabs">
   <button class="mode-tab active" id="tabKagu" onclick="switchMode('kagu')">🌿 家具</button>
   <button class="mode-tab" id="tabRecipe" onclick="switchMode('recipe')">📖 レシピ</button>
@@ -648,7 +641,7 @@ body.mode-hhp { background: #e0f2f1; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607e</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607g</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -691,6 +684,7 @@ body.mode-hhp { background: #e0f2f1; }
 
 <div class="cat-tabs" id="catTabs"></div>
 <div class="kana-nav" id="kanaNav"></div>
+</div><!-- /stickyWrapper -->
 <div class="main" id="main"></div>
 
 <script>
@@ -1519,8 +1513,8 @@ function jumpToKana(chars, btn) {
   }
   if (!target) return;
 
-  // スティッキーヘッダーの高さ分オフセット（mode-tabs+header+controls+cat-tabs+kana-nav）
-  const offset = 48 + 52 + 46 + 46 + 40 + 16;
+  // スティッキーヘッダーの実際の高さを取得
+  const offset = document.getElementById('stickyWrapper').offsetHeight;
   const top = target.getBoundingClientRect().top + window.scrollY - offset;
   window.scrollTo({ top, behavior: 'smooth' });
 
