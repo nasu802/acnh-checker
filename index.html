@@ -536,19 +536,20 @@ body.mode-fuku { background: #fce4ec; }
   <button class="mode-tab" id="tabFuku" onclick="switchMode('fuku')">👗 服</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="changeUser()"></span><span id="syncIndicator" class="sync-indicator"></span><button class="party-btn" onclick="openParty()">👥 みんな</button><div class="header-stats" id="headerStats">...</div></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="changeUser()"></span><span id="syncIndicator" class="sync-indicator"></span><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div></header>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
   <div class="party-sheet">
-    <div class="party-sheet-title">👥 みんなの進捗<button class="party-close" onclick="closeParty()">✕</button></div>
+    <div class="party-sheet-title">みんなの進捗<button class="party-close" onclick="closeParty()">✕</button></div>
     <div class="party-tabs">
-      <button id="partyTabSummary" class="party-tab-btn active" onclick="setPartyTab('summary')">📊 進捗</button>
-      <button id="partyTabItems"   class="party-tab-btn"        onclick="setPartyTab('items')">📋 アイテム</button>
+      <button id="partyTabItems"   class="party-tab-btn active"  onclick="setPartyTab('items')">アイテム</button>
+      <button id="partyTabSummary" class="party-tab-btn"         onclick="setPartyTab('summary')">進捗</button>
     </div>
     <div id="partySummaryView"></div>
     <div id="partyItemsView" style="display:none">
       <div class="party-mode-sel" id="partyModeSel"></div>
       <div class="party-filter" id="partyFilterBtns"></div>
+      <div class="party-filter" id="partyCatBtns" style="margin-bottom:8px"></div>
       <input class="party-item-search" id="partyItemSearch" placeholder="🔍 名前で絞り込み..." oninput="renderPartyItems()">
       <div class="party-count-note" id="partyCountNote"></div>
       <div class="party-item-list" id="partyItemList"></div>
@@ -755,11 +756,11 @@ function changeUser() {
   }
 }
 const PARTY_MODES = [
-  { key: 'kagu',   label: '🌿 家具',   color: '#5a9e38' },
-  { key: 'recipe', label: '📖 レシピ', color: '#4488cc' },
-  { key: 'music',  label: '🎵 とたけけ', color: '#d07040' },
-  { key: 'art',    label: '🖼️ 美術品', color: '#9a6828' },
-  { key: 'fuku',   label: '👗 服',     color: '#e91e8c' },
+  { key: 'kagu',   label: '家具',    color: '#5a9e38' },
+  { key: 'recipe', label: 'レシピ',  color: '#4488cc' },
+  { key: 'music',  label: 'とたけけ', color: '#d07040' },
+  { key: 'art',    label: '美術品',  color: '#9a6828' },
+  { key: 'fuku',   label: '服',      color: '#e91e8c' },
 ];
 const PARTY_TOTALS = {};
 for (const m of PARTY_MODES) {
@@ -768,7 +769,7 @@ for (const m of PARTY_MODES) {
 const USER_PALETTE = ['#5a9e38','#4488cc','#d07040','#e91e8c','#7b4fa6','#00897b','#e53935','#f57c00','#795548','#607d8b'];
 
 let partyAllData  = {};   // username → {mode → Set<en>}
-let partyTab       = 'summary';
+let partyTab       = 'items';
 let partyItemMode  = 'kagu';
 let partyItemFilter = 'nobody'; // 'all' | 'nobody' | 'some' | 'everyone'
 let partyUserColors = {};
@@ -852,8 +853,11 @@ function renderPartySummary() {
   }
 }
 
+let partyItemCat = 'すべて';
+
 function buildPartyItemControls() {
-  // モード選択ボタン
+  const modeInfo = PARTY_MODES.find(m => m.key === partyItemMode);
+  // モード選択
   const modeSel = document.getElementById('partyModeSel');
   modeSel.innerHTML = '';
   for (const m of PARTY_MODES) {
@@ -861,15 +865,15 @@ function buildPartyItemControls() {
     btn.className = 'party-mode-btn' + (m.key === partyItemMode ? ' active' : '');
     btn.style.background = m.key === partyItemMode ? m.color : '';
     btn.textContent = m.label;
-    btn.onclick = () => { partyItemMode = m.key; buildPartyItemControls(); renderPartyItems(); };
+    btn.onclick = () => { partyItemMode = m.key; partyItemCat = 'すべて'; buildPartyItemControls(); renderPartyItems(); };
     modeSel.appendChild(btn);
   }
-  // フィルターボタン
+  // フィルター
   const filters = [
-    { key: 'nobody',   label: '🙅 誰も未入手' },
-    { key: 'some',     label: '👤 誰かが持ってる' },
-    { key: 'everyone', label: '✅ 全員持ってる' },
-    { key: 'all',      label: '📋 全部' },
+    { key: 'nobody',   label: '誰も未入手' },
+    { key: 'some',     label: '誰かが持ってる' },
+    { key: 'everyone', label: '全員持ってる' },
+    { key: 'all',      label: '全部' },
   ];
   const filterEl = document.getElementById('partyFilterBtns');
   filterEl.innerHTML = '';
@@ -880,15 +884,29 @@ function buildPartyItemControls() {
     btn.onclick = () => { partyItemFilter = f.key; buildPartyItemControls(); renderPartyItems(); };
     filterEl.appendChild(btn);
   }
+  // カテゴリ
+  const cats = Object.keys(DATA[partyItemMode]);
+  const catEl = document.getElementById('partyCatBtns');
+  catEl.innerHTML = '';
+  if (cats.length > 1) {
+    for (const cat of ['すべて', ...cats]) {
+      const btn = document.createElement('button');
+      btn.className = 'party-filter-btn' + (cat === partyItemCat ? ' active' : '');
+      btn.style.fontSize = '11px';
+      btn.textContent = cat;
+      btn.onclick = () => { partyItemCat = cat; buildPartyItemControls(); renderPartyItems(); };
+      catEl.appendChild(btn);
+    }
+  }
 }
 
 function renderPartyItems() {
   if (!partyUserNames.length) return;
   const q = (document.getElementById('partyItemSearch').value || '').toLowerCase();
-  const allItems = Object.values(DATA[partyItemMode]).flat();
+  const cats = partyItemCat === 'すべて' ? Object.values(DATA[partyItemMode]).flat() : (DATA[partyItemMode][partyItemCat] || []);
   const n = partyUserNames.length;
 
-  const filtered = allItems.filter(item => {
+  const filtered = cats.filter(item => {
     if (q && !item.ja.toLowerCase().includes(q) && !item.en.toLowerCase().includes(q)) return false;
     const haveCount = partyUserNames.filter(u => (partyAllData[u][partyItemMode] || new Set()).has(item.en)).length;
     if (partyItemFilter === 'nobody')   return haveCount === 0;
@@ -897,13 +915,11 @@ function renderPartyItems() {
     return true;
   });
 
-  const MAX = 300;
-  document.getElementById('partyCountNote').textContent =
-    filtered.length + '件' + (filtered.length > MAX ? '（先頭' + MAX + '件表示）' : '');
+  document.getElementById('partyCountNote').textContent = filtered.length + '件';
 
   const list = document.getElementById('partyItemList');
   list.innerHTML = '';
-  for (const item of filtered.slice(0, MAX)) {
+  for (const item of filtered) {
     const row = document.createElement('div');
     row.className = 'party-item-row';
     const nameEl = document.createElement('span');
