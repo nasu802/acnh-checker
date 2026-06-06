@@ -1739,18 +1739,6 @@ function renderRecent() {
     const day = Math.floor(diff / 86400000);
     return day + '日前';
   }
-  function dayKey(ts) {
-    const d = new Date(ts);
-    return d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate();
-  }
-  function dayLabel(ts) {
-    const today = dayKey(Date.now());
-    const yesterday = dayKey(Date.now() - 86400000);
-    const key = dayKey(ts);
-    if (key === today) return '今日';
-    if (key === yesterday) return '昨日';
-    return key;
-  }
 
   const sec = document.createElement('div');
   sec.className = 'recent-section';
@@ -1763,28 +1751,35 @@ function renderRecent() {
     return;
   }
 
-  let lastDay = null;
-  for (const item of timedItems) {
-    const day = dayKey(item.ts);
-    if (day !== lastDay) {
-      const lbl = document.createElement('div');
-      lbl.className = 'recent-date-label';
-      lbl.textContent = dayLabel(item.ts);
-      sec.appendChild(lbl);
-      lastDay = day;
-    }
+  // グラデーション用: timedItemsは新しい順なので index 0=最新(ratio=1), last=最古(ratio=0)
+  const n = timedItems.length;
+  const minTs = n ? timedItems[n - 1].ts : 0;
+  const maxTs = n ? timedItems[0].ts : 1;
+
+  for (let idx = 0; idx < timedItems.length; idx++) {
+    const item = timedItems[idx];
+    const ratio = n <= 1 ? 1 : (item.ts - minTs) / (maxTs - minTs);
+    const style = getRankStyle(ratio);
+
     const row = document.createElement('div');
     row.className = 'recent-item-row' + (!viewing ? ' clickable' : '');
+    row.style.background = style.background;
+    row.style.borderColor = style.borderColor;
+
     const name = document.createElement('span');
     name.className = 'recent-item-name';
+    name.style.color = style.color;
     name.textContent = item.ja;
+
     const modeTag = document.createElement('span');
     modeTag.className = 'recent-item-mode';
     modeTag.style.background = RECENT_MODE_COLORS[item.m];
     modeTag.textContent = RECENT_MODE_LABELS[item.m];
+
     const time = document.createElement('span');
     time.className = 'recent-item-time';
     time.textContent = timeLabel(item.ts);
+
     row.appendChild(name);
     row.appendChild(modeTag);
     row.appendChild(time);
