@@ -517,8 +517,10 @@ body.mode-fuku { background: #fce4ec; }
 <div id="userModalOverlay" class="user-modal-overlay" style="display:none">
   <div class="user-modal-box">
     <h2>🌿 あつ森チェッカー</h2>
-    <p>あなたの名前を入力してください。<br>この名前でデータが保存されます。</p>
-    <input type="text" id="userNameInput" placeholder="例: masuda" maxlength="20" autocomplete="off">
+    <p>あなたの名前とパスワードを入力してください。</p>
+    <input type="text" id="userNameInput" placeholder="名前（例: masuda）" maxlength="20" autocomplete="off">
+    <input type="password" id="userPassInput" placeholder="パスワード" maxlength="40" autocomplete="off" style="margin-top:-4px">
+    <div id="userPassError" style="color:#e53935;font-size:12px;margin:-6px 0 8px;display:none">パスワードが違います</div>
     <button class="user-modal-btn" id="userNameOk">はじめる</button>
   </div>
 </div>
@@ -1280,26 +1282,38 @@ function startApp() {
     if (supabase && currentUser) loadFromCloud().then(() => render());
   });
 }
+const APP_PASS = 'hirase';
 function initUser() {
-  if (currentUser) {
-    // ローカルデータで即座に表示してからSupabase同期
+  if (currentUser && localStorage.getItem('acnh_authed')) {
     startApp();
   } else {
     const overlay = document.getElementById('userModalOverlay');
     overlay.style.display = 'flex';
     const input = document.getElementById('userNameInput');
+    const passInput = document.getElementById('userPassInput');
+    const passError = document.getElementById('userPassError');
     const btn = document.getElementById('userNameOk');
-    input.focus();
+    (currentUser ? passInput : input).focus();
+    if (currentUser) input.value = currentUser;
     function confirm() {
       const name = input.value.trim();
+      const pass = passInput.value;
       if (!name) { input.focus(); return; }
+      if (pass !== APP_PASS) {
+        passError.style.display = 'block';
+        passInput.focus();
+        passInput.select();
+        return;
+      }
+      passError.style.display = 'none';
       currentUser = name;
       localStorage.setItem('acnh_username', name);
+      localStorage.setItem('acnh_authed', '1');
       overlay.style.display = 'none';
       startApp();
     }
     btn.onclick = confirm;
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') confirm(); });
+    [input, passInput].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') confirm(); }));
   }
 }
 initUser();
