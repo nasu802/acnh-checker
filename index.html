@@ -59,8 +59,8 @@ header {
   box-shadow: 0 3px 0 rgba(0,0,0,0.15);
 }
 header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.03em; flex-shrink: 0; }
-.header-spacer { flex: 1; }
-.header-stats { font-size: 13px; opacity: 0.95; font-weight: 700; flex-shrink: 0; white-space: nowrap; }
+.header-stats { font-size: 13px; opacity: 0.95; margin-left: auto; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.backup-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 8px; color: white; font-size: 16px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .header-users {
   display: flex; gap: 8px; align-items: center; flex-shrink: 0;
 }
@@ -605,7 +605,7 @@ body.mode-fuku { background: #fce4ec; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="changeUser()"></span><div class="header-users" id="headerUsers"></div><div class="header-spacer"></div><span id="syncIndicator" class="sync-indicator"></span><button class="party-btn" onclick="openParty()">みんな</button><button class="party-btn" onclick="showBackupMenu()">バックアップ</button><div class="header-stats" id="headerStats">...</div></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="changeUser()"></span><div class="header-users" id="headerUsers"></div><span id="syncIndicator" class="sync-indicator"></span><button class="party-btn" onclick="openParty()">みんな</button><button class="backup-btn" onclick="showBackupMenu()" title="バックアップ">&#128190;</button><div class="header-stats" id="headerStats">...</div></header>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
   <div class="party-sheet">
