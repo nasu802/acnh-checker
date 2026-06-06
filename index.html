@@ -422,17 +422,17 @@ body.mode-art { background: #f2e8d8; }
 .mode-art .kana-btn.hit { border-color: #9a6828; color: #7a5018; background: #f9f0e0; }
 
 /* 服: さくらピンク */
-body.mode-fuku { background: #fce4ec; }
-.mode-fuku .section-block { box-shadow: 0 3px 0 #f48fb1, 0 4px 10px rgba(0,0,0,0.07); border-color: #f8bbd0; }
-.mode-fuku header { background: #e91e8c; }
-.mode-fuku input[type=search]:focus { border-color: #e91e8c; }
-.mode-fuku .cat-tab:hover { color: #e91e8c; }
-.mode-fuku .cat-tab.active { color: #880e4f; border-bottom-color: #e91e8c; }
-.mode-fuku .cat-tab.active .badge { background: #fce4ec; color: #880e4f; }
-.mode-fuku .chip-todo:hover { border-color: #e91e8c; background: #fce4ec; color: #880e4f; }
-.mode-fuku .progress-fill { background: linear-gradient(90deg, #e91e8c, #f06292); }
-.mode-fuku .cat-icon { background: #e91e8c; }
-.mode-fuku .kana-btn.hit { border-color: #e91e8c; color: #880e4f; background: #fce4ec; }
+body.mode-fuku { background: #f9eaf2; }
+.mode-fuku .section-block { box-shadow: 0 3px 0 #d48faa, 0 4px 10px rgba(0,0,0,0.07); border-color: #e8c0d0; }
+.mode-fuku header { background: #b5447a; }
+.mode-fuku input[type=search]:focus { border-color: #b5447a; }
+.mode-fuku .cat-tab:hover { color: #b5447a; }
+.mode-fuku .cat-tab.active { color: #7a2858; border-bottom-color: #b5447a; }
+.mode-fuku .cat-tab.active .badge { background: #f9eaf2; color: #7a2858; }
+.mode-fuku .chip-todo:hover { border-color: #b5447a; background: #f9eaf2; color: #7a2858; }
+.mode-fuku .progress-fill { background: linear-gradient(90deg, #b5447a, #d06898); }
+.mode-fuku .cat-icon { background: #b5447a; }
+.mode-fuku .kana-btn.hit { border-color: #b5447a; color: #7a2858; background: #f9eaf2; }
 
 /* HHP: ティール */
 body.mode-hhp { background: #e0f2f1; }
@@ -446,6 +446,10 @@ body.mode-hhp { background: #e0f2f1; }
 .mode-hhp .progress-fill { background: linear-gradient(90deg, #00796b, #26a69a); }
 .mode-hhp .cat-icon { background: #00796b; }
 .mode-hhp .kana-btn.hit { border-color: #00796b; color: #004d40; background: #e0f2f1; }
+/* 最近入手: ニュートラルスレート */
+body.mode-recent { background: #f0f0f5; }
+.mode-recent header { background: #3d4a5a; }
+
 
 /* ユーザーモーダル */
 .user-modal-overlay {
@@ -514,17 +518,17 @@ body.mode-hhp { background: #e0f2f1; }
 }
 .party-sheet {
   background: white; border-radius: 20px 20px 0 0;
-  width: 100%; max-width: 640px; height: 94vh;
+  width: 100%; max-width: 640px; height: 97vh;
   display: flex; flex-direction: column; overflow: hidden;
   padding: 14px 14px 0;
   box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
 }
 .party-sheet-title { flex-shrink: 0; }
 #partySummaryToggle { flex-shrink: 0; margin-bottom: 6px !important; }
-#partySummaryView { flex-shrink: 0; overflow-y: auto; max-height: 28vh; }
+#partySummaryView { flex-shrink: 0; overflow-y: auto; max-height: 22vh; }
 #partyItemsView { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-#partyControls { flex-shrink: 0; }
-#partyItemList { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 32px; }
+#partyControls { flex-shrink: 0; overflow: hidden; }
+#partyItemList { flex: 1; overflow-y: auto; min-height: 80px; padding-bottom: max(32px, env(safe-area-inset-bottom, 32px)); }
 .party-sheet-title {
   font-size: 15px; font-weight: 800; margin-bottom: 8px;
   display: flex; align-items: center; gap: 8px;
@@ -641,7 +645,7 @@ body.mode-hhp { background: #e0f2f1; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607h</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607j</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -656,7 +660,7 @@ body.mode-hhp { background: #e0f2f1; }
         <div class="party-mode-sel" id="partyModeSel"></div>
         <div class="party-user-row" id="partyUserBtns"></div>
         <div class="party-filter" id="partyFilterBtns"></div>
-        <div class="party-filter" id="partyCatBtns" style="margin-bottom:8px"></div>
+        <div class="party-filter" id="partyCatBtns" style="margin-bottom:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none"></div>
         <input class="party-item-search" id="partyItemSearch" placeholder="名前で絞り込み..." oninput="renderPartyItems()">
         <div class="party-count-note" id="partyCountNote"></div>
       </div>
