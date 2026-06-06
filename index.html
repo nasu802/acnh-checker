@@ -810,6 +810,9 @@ function updateUserBadge() {
 }
 async function syncToCloud() {
   if (!currentUser) return;
+  // 全モードが空の場合はアップしない（空データによる上書き防止）
+  const totalOwned = ['kagu','recipe','music','art','fuku'].reduce((s, m) => s + Object.keys(state[m].owned).length, 0);
+  if (totalOwned === 0) return;
   document.getElementById('syncIndicator').textContent = '↑';
   try {
     const rows = ['kagu','recipe','music','art','fuku'].map(m => ({
