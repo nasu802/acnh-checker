@@ -751,16 +751,13 @@ function toggleNewHighlight() {
   localStorage.setItem('acnh_show_new', showNew);
   render();
 }
-function getRecentStyle(ts) {
-  const age = Date.now() - ts;
-  if (age >= NEW_THRESHOLD) return null;
-  const ratio = age / NEW_THRESHOLD; // 0=今, 1=1週間前
-  // hue: 130(緑) → 45(黄) → 20(オレンジ)
-  const hue = Math.round(130 - ratio * 110);
-  const sat = Math.round(75 - ratio * 20); // 75% → 55%
-  const lBorder = Math.round(42 + ratio * 10); // 42% → 52%
-  const lBg = Math.round(93 + ratio * 4);      // 93% → 97%
-  const lText = Math.round(22 + ratio * 20);   // 22% → 42%
+function getRankStyle(ratio) {
+  // ratio: 0=一番最初にゲット(オレンジ), 1=一番最近ゲット(緑)
+  const hue = Math.round(20 + ratio * 110);    // 20(オレンジ) → 130(緑)
+  const sat = Math.round(55 + ratio * 20);      // 55% → 75%
+  const lBorder = Math.round(52 - ratio * 10); // 52% → 42%
+  const lBg = Math.round(97 - ratio * 4);      // 97% → 93%
+  const lText = Math.round(42 - ratio * 20);   // 42% → 22%
   return {
     borderColor: `hsl(${hue},${sat}%,${lBorder}%)`,
     background:  `hsl(${hue},${sat}%,${lBg}%)`,
@@ -1442,11 +1439,15 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q) {
     doneGrid.className = 'done-items' + (isOpen ? ' open' : '');
     doneGrid.id = 'done-' + cat;
     const sortedDone = [...doneItems].sort((a, b) => owned[b.en] - owned[a.en]);
+    // 全モードの収集済みアイテムを時系列でランク付け
+    const allTs = Object.values(owned).sort((a, b) => a - b);
+    const minTs = allTs[0] || 0;
+    const maxTs = allTs[allTs.length - 1] || 1;
     for (const item of sortedDone) {
-      const style = showNew ? getRecentStyle(owned[item.en]) : null;
-      const isNew = !!style;
+      const ratio = allTs.length <= 1 ? 1 : (owned[item.en] - minTs) / (maxTs - minTs);
+      const style = showNew ? getRankStyle(ratio) : null;
       const chip = document.createElement('span');
-      chip.className = 'chip chip-done' + (selectedItems.has(item.en) ? ' selected' : '') + (isNew ? ' chip-new' : '');
+      chip.className = 'chip chip-done' + (selectedItems.has(item.en) ? ' selected' : '') + (style ? ' chip-new' : '');
       chip.dataset.en = item.en;
       chip.textContent = item.ja;
       if (style) {
