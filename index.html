@@ -767,6 +767,7 @@ let selectMode = false;
 let selectedItems = new Set();
 let viewingUser = null;
 let otherUsersData = {};
+let isViewing = false;
 let showNew = localStorage.getItem('acnh_show_new') !== 'false';
 const NEW_THRESHOLD = 365 * 24 * 60 * 60 * 1000; // 1年以内をNEWとみなす
 function toggleNewHighlight() {
@@ -1325,8 +1326,8 @@ function renderTabs() {
 function render() {
   document.getElementById('newToggleBtn').className = 'new-toggle-btn' + (showNew ? '' : ' off');
   if (mode === 'recent') { renderRecent(); return; }
+  isViewing = !!(viewingUser && viewingUser !== currentUser);
   renderTabs();
-  const isViewing = viewingUser && viewingUser !== currentUser;
   const items = DATA[mode];
   const cats = Object.keys(items);
   const owned = getDisplayOwned();
