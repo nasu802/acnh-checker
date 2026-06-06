@@ -510,6 +510,20 @@ body.mode-fuku { background: #fce4ec; }
   font-size: 9px; font-weight: 800; color: white;
 }
 .party-dot.not { background: #eee !important; color: #ccc; }
+.party-user-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.party-user-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px 5px 6px; border-radius: 20px;
+  border: 2px solid transparent; cursor: pointer;
+  font-size: 13px; font-weight: 700; font-family: inherit;
+  background: #f0f0f0; color: #444; transition: all 0.12s;
+}
+.party-user-btn .dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.party-user-btn.active { color: white; }
+.party-user-btn.active .dot { outline: 2px solid rgba(255,255,255,0.6); }
 </style>
 </head>
 <body class="mode-kagu">
@@ -548,9 +562,10 @@ body.mode-fuku { background: #fce4ec; }
     <div id="partySummaryView"></div>
     <div id="partyItemsView" style="display:none">
       <div class="party-mode-sel" id="partyModeSel"></div>
+      <div class="party-user-row" id="partyUserBtns"></div>
       <div class="party-filter" id="partyFilterBtns"></div>
       <div class="party-filter" id="partyCatBtns" style="margin-bottom:8px"></div>
-      <input class="party-item-search" id="partyItemSearch" placeholder="🔍 名前で絞り込み..." oninput="renderPartyItems()">
+      <input class="party-item-search" id="partyItemSearch" placeholder="名前で絞り込み..." oninput="renderPartyItems()">
       <div class="party-count-note" id="partyCountNote"></div>
       <div class="party-item-list" id="partyItemList"></div>
     </div>
@@ -842,9 +857,9 @@ function renderPartySummary() {
 }
 
 let partyItemCat = 'すべて';
+let partySelectedUser = null;
 
 function buildPartyItemControls() {
-  const modeInfo = PARTY_MODES.find(m => m.key === partyItemMode);
   // モード選択
   const modeSel = document.getElementById('partyModeSel');
   modeSel.innerHTML = '';
@@ -853,10 +868,28 @@ function buildPartyItemControls() {
     btn.className = 'party-mode-btn' + (m.key === partyItemMode ? ' active' : '');
     btn.style.background = m.key === partyItemMode ? m.color : '';
     btn.textContent = m.label;
-    btn.onclick = () => { partyItemMode = m.key; partyItemCat = 'すべて'; buildPartyItemControls(); renderPartyItems(); };
+    btn.onclick = () => { partyItemMode = m.key; partyItemCat = 'すべて'; partySelectedUser = null; buildPartyItemControls(); renderPartyItems(); };
     modeSel.appendChild(btn);
   }
-  // フィルター
+  // ユーザーボタン
+  const userEl = document.getElementById('partyUserBtns');
+  userEl.innerHTML = '';
+  for (const uname of partyUserNames) {
+    const color = partyUserColors[uname];
+    const isSelected = partySelectedUser === uname;
+    const btn = document.createElement('button');
+    btn.className = 'party-user-btn' + (isSelected ? ' active' : '');
+    btn.style.background = isSelected ? color : '';
+    btn.style.borderColor = isSelected ? color : 'transparent';
+    btn.innerHTML = '<span class="dot" style="background:' + color + '"></span>' + uname;
+    btn.onclick = () => {
+      partySelectedUser = (partySelectedUser === uname) ? null : uname;
+      buildPartyItemControls();
+      renderPartyItems();
+    };
+    userEl.appendChild(btn);
+  }
+  // フィルター（ユーザー選択中は非表示）
   const filters = [
     { key: 'nobody',   label: '誰も未入手' },
     { key: 'some',     label: '誰かが持ってる' },
@@ -864,13 +897,16 @@ function buildPartyItemControls() {
     { key: 'all',      label: '全部' },
   ];
   const filterEl = document.getElementById('partyFilterBtns');
+  filterEl.style.display = partySelectedUser ? 'none' : '';
   filterEl.innerHTML = '';
-  for (const f of filters) {
-    const btn = document.createElement('button');
-    btn.className = 'party-filter-btn' + (f.key === partyItemFilter ? ' active' : '');
-    btn.textContent = f.label;
-    btn.onclick = () => { partyItemFilter = f.key; buildPartyItemControls(); renderPartyItems(); };
-    filterEl.appendChild(btn);
+  if (!partySelectedUser) {
+    for (const f of filters) {
+      const btn = document.createElement('button');
+      btn.className = 'party-filter-btn' + (f.key === partyItemFilter ? ' active' : '');
+      btn.textContent = f.label;
+      btn.onclick = () => { partyItemFilter = f.key; buildPartyItemControls(); renderPartyItems(); };
+      filterEl.appendChild(btn);
+    }
   }
   // カテゴリ
   const cats = Object.keys(DATA[partyItemMode]);
@@ -896,6 +932,10 @@ function renderPartyItems() {
 
   const filtered = cats.filter(item => {
     if (q && !item.ja.toLowerCase().includes(q) && !item.en.toLowerCase().includes(q)) return false;
+    if (partySelectedUser) {
+      // 選択ユーザーの未入手アイテムだけ表示
+      return !(partyAllData[partySelectedUser][partyItemMode] || new Set()).has(item.en);
+    }
     const haveCount = partyUserNames.filter(u => (partyAllData[u][partyItemMode] || new Set()).has(item.en)).length;
     if (partyItemFilter === 'nobody')   return haveCount === 0;
     if (partyItemFilter === 'some')     return haveCount > 0 && haveCount < n;
