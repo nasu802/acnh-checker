@@ -703,7 +703,7 @@ body.mode-recent { background: #f0f0f5; }
 #partySummaryToggle { flex-shrink: 0; margin-bottom: 6px !important; }
 #partySummaryView { flex-shrink: 0; overflow-y: auto; max-height: 22vh; }
 #partyItemsView { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-#partyControls { flex-shrink: 0; overflow: hidden; }
+#partyControls { flex-shrink: 0; overflow: visible; }
 #partyItemList { flex: 1; overflow-y: auto; min-height: 80px; padding-bottom: max(32px, env(safe-area-inset-bottom, 32px)); }
 .party-sheet-title {
   font-size: 15px; font-weight: 800; margin-bottom: 8px;
@@ -1169,6 +1169,7 @@ function buildPartyData(rows) {
 
 async function openParty(focusUser) {
   document.getElementById('partyOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   let rows;
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/progress?select=username,mode,owned', { headers: DB_HEADERS });
@@ -1186,6 +1187,7 @@ function localRows() {
 }
 function closeParty() {
   document.getElementById('partyOverlay').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 function setPartyTab(tab) { /* 互換用 */ }
