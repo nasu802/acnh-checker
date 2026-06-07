@@ -614,13 +614,7 @@ body.mode-recent { background: #f0f0f5; }
   font-size: 11px; color: rgba(255,255,255,0.7);
   margin-left: 4px;
 }
-.sync-btn {
-  font-size: 15px; padding: 2px 9px; border-radius: 8px;
-  border: 1.5px solid rgba(255,255,255,0.3); background: transparent;
-  color: rgba(255,255,255,0.85); cursor: pointer; font-family: inherit;
-  margin-left: 4px; line-height: 1.2; transition: opacity 0.2s;
-}
-.sync-btn:disabled { opacity: 0.35; }
+
 .recent-item-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: white; margin-bottom: 4px; border: 1.5px solid #eee; transition: background 0.15s; }
 .recent-item-row.clickable { cursor: pointer; }
 .recent-item-row.clickable:active { background: #f0f0f0; }
@@ -777,7 +771,7 @@ body.mode-recent { background: #f0f0f5; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607z</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0608a</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
