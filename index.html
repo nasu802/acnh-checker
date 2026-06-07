@@ -1552,6 +1552,7 @@ function renderTabs() {
 function render() {
   const dmBtn = document.getElementById('displayModeBtn');
   if (dmBtn) { dmBtn.textContent = displayMode === 'chip' ? 'リスト' : 'チップ'; dmBtn.className = 'ctrl-btn' + (displayMode === 'list' ? ' active' : ''); }
+  updateSortBtn();
   if (mode === 'recent') { renderRecent(); return; }
   isViewing = !!(viewingUser && viewingUser !== currentUser);
   renderTabs();
@@ -1961,14 +1962,20 @@ function toggleDisplayMode() {
   render();
 }
 function toggleSortOrder() {
-  setSortOrder(sortOrder === 'kana' ? 'new' : 'kana');
+  sortOrder = sortOrder === 'kana' ? 'new' : 'kana';
+  updateSortBtn();
   render();
 }
 function setSortOrder(v) {
   sortOrder = v;
-  const sb = document.getElementById('sortToggleBtn');
-  if (sb) sb.textContent = v === 'kana' ? 'あ順' : '新着順';
+  updateSortBtn();
   render();
+}
+function updateSortBtn() {
+  const sb = document.getElementById('sortToggleBtn');
+  if (!sb) return;
+  sb.textContent = sortOrder === 'kana' ? 'あ順' : '新着順';
+  sb.className = 'ctrl-btn' + (sortOrder === 'new' ? ' active' : '');
 }
 function setScope(v) {
   searchScope = v;
