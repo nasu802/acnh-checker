@@ -1847,22 +1847,27 @@ function toHira(c) {
   return (cp >= 0x30A1 && cp <= 0x30F6) ? String.fromCharCode(cp - 0x60) : c;
 }
 function jumpToKana(chars, btn) {
-  const chips = document.querySelectorAll('.chip-todo');
   let target = null;
-  for (const chip of chips) {
-    if (chars.includes(toHira(chip.textContent[0]))) { target = chip; break; }
+  if (displayMode === 'list') {
+    // リストモード: .list-name の先頭文字で検索
+    for (const row of document.querySelectorAll('.items-list .list-row:not(.list-checked)')) {
+      const nm = row.querySelector('.list-name');
+      if (nm && chars.includes(toHira(nm.textContent[0]))) { target = row; break; }
+    }
+  } else {
+    for (const chip of document.querySelectorAll('.chip-todo')) {
+      if (chars.includes(toHira(chip.textContent[0]))) { target = chip; break; }
+    }
   }
   if (!target) return;
 
-  // スティッキーヘッダーの実際の高さを取得
   const offset = document.getElementById('stickyWrapper').offsetHeight;
-  const top = target.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top, behavior: 'smooth' });
+  const top = target.getBoundingClientRect().top + window.scrollY - offset - 6;
+  window.scrollTo({ top, behavior: 'instant' });
 
-  // ボタンを一瞬ハイライト
   document.querySelectorAll('.kana-btn').forEach(b => b.classList.remove('hit'));
   btn.classList.add('hit');
-  setTimeout(() => btn.classList.remove('hit'), 800);
+  setTimeout(() => btn.classList.remove('hit'), 600);
 }
 
 // カタカナ→ひらがな変換 + 長音符除去（辞書準拠: か≠が、カ=か）
