@@ -827,8 +827,7 @@ body.mode-recent { background: #f0f0f5; }
   <button class="ctrl-btn" data-v="all"  onclick="setScope('all')">全て</button>
   <button class="ctrl-btn" data-v="done" onclick="setScope('done')">収集済</button>
   <div class="ctrl-sep"></div>
-  <button class="ctrl-btn active" id="sortKana" onclick="setSortOrder('kana')">あ順</button>
-  <button class="ctrl-btn" id="sortNew"  onclick="setSortOrder('new')">新着順</button>
+  <button class="ctrl-btn" id="sortToggleBtn" onclick="toggleSortOrder()">あ順</button>
   <div class="ctrl-sep"></div>
   <button class="ctrl-btn" id="displayModeBtn" onclick="toggleDisplayMode()">リスト</button>
   <div class="ctrl-sep"></div>
@@ -1917,10 +1916,14 @@ function toggleDisplayMode() {
   }
   render();
 }
+function toggleSortOrder() {
+  setSortOrder(sortOrder === 'kana' ? 'new' : 'kana');
+  render();
+}
 function setSortOrder(v) {
   sortOrder = v;
-  document.getElementById('sortKana').className = 'ctrl-btn' + (v === 'kana' ? ' active' : '');
-  document.getElementById('sortNew').className  = 'ctrl-btn' + (v === 'new'  ? ' active' : '');
+  const sb = document.getElementById('sortToggleBtn');
+  if (sb) sb.textContent = v === 'kana' ? 'あ順' : '新着順';
   render();
 }
 function setScope(v) {
