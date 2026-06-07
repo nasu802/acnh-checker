@@ -166,17 +166,7 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   white-space: nowrap;
 }
 .partial-label input { accent-color: #5a9e38; cursor: pointer; }
-#searchScope {
-  padding: 5px 8px;
-  border: 1.5px solid #ccc;
-  border-radius: 10px;
-  font-size: 13px;
-  font-family: inherit;
-  color: #444;
-  background: white;
-  cursor: pointer;
-  outline: none;
-}
+/* searchScope: replaced by scope-btns */
 
 /* カテゴリタブ */
 .cat-tabs {
@@ -289,7 +279,7 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 8px 16px;
+  padding: 7px 15px;
   border-radius: 24px;
   font-size: 14px;
   font-family: inherit;
@@ -299,7 +289,7 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   transition: background 0.12s, border-color 0.12s, color 0.12s;
   border: 2px solid;
   line-height: 1.3;
-  min-height: 40px;
+  min-height: 44px;
 }
 .chip-todo {
   background: white;
@@ -357,11 +347,14 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 .src-filters {
   display: flex;
   gap: 6px;
-  padding: 4px 0 8px;
+  padding: 5px 16px;
+  background: white;
+  border-bottom: 1px solid #eee;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   align-items: center;
+  flex-wrap: wrap;
 }
 .src-filters::-webkit-scrollbar { display: none; }
 .src-filters-label { font-size: 11px; color: #999; white-space: nowrap; margin-right: 2px; }
@@ -477,38 +470,13 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 }
 .help-btn:hover { background: rgba(255,255,255,0.35); }
 
-/* 収集スコープボタン */
-.scope-btns {
-  display: flex;
-  border-radius: 10px;
-  border: 1.5px solid #ccc;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.scope-btn {
-  padding: 5px 8px;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  border: none;
-  background: white;
-  color: #888;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all .12s;
-  border-right: 1px solid #ddd;
-}
-.scope-btn:last-child { border-right: none; }
-.scope-btn.active { background: var(--mode-color, #5a9e38); color: white; }
-
-/* トップへ戻るボタン */
 #backToTop {
   position: fixed;
   right: 16px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
   width: 44px; height: 44px;
   border-radius: 50%;
-  background: rgba(61,106,42,0.85);
+  background: rgba(61,106,42,0.88);
   color: white;
   border: none;
   font-size: 20px;
@@ -518,10 +486,31 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   display: none;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
   transition: opacity .2s;
 }
 #backToTop.show { display: flex; }
+
+.scope-btns {
+  display: flex;
+  border-radius: 10px;
+  border: 1.5px solid #ccc;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.scope-btn {
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  background: white;
+  color: #888;
+  cursor: pointer;
+  white-space: nowrap;
+  border-right: 1px solid #ddd;
+}
+.scope-btn:last-child { border-right: none; }
+.scope-btn.active { background: #5a9e38; color: white; }
 .new-toggle-btn { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1.5px solid #5a9e38; background: #5a9e38; color: white; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .new-toggle-btn.off { background: white; color: #999; border-color: #ccc; }
 .select-bar {
@@ -891,8 +880,8 @@ body.mode-recent { background: #f0f0f5; }
   </div>
 </div>
 </div>
-<div id="toast"></div>
-<button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<div id='toast'></div>
+<button id='backToTop' onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <div id="cloudLoadOverlay"><div class="cloud-spinner"></div><div>クラウドから読み込み中...</div></div>
 <div id="userModalOverlay" class="user-modal-overlay" style="display:none">
   <div class="user-modal-box">
@@ -919,7 +908,7 @@ body.mode-recent { background: #f0f0f5; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="help-btn" onclick="openTips()" title="使い方">?</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607t</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="help-btn" onclick="openTips()" title="使い方">?</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607u</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -960,6 +949,7 @@ body.mode-recent { background: #f0f0f5; }
   </label>
 </div>
 
+<div class="src-filters" id="srcFilters"></div>
 <div class="cat-tabs" id="catTabs"></div>
 <div class="kana-nav" id="kanaNav"></div>
 </div><!-- /stickyWrapper -->
@@ -1440,10 +1430,8 @@ function showSupabaseHelp() {
   return false;
 }
 
-const MODE_COLORS = {"kagu": "#5a9e38", "recipe": "#4488cc", "music": "#d07040", "art": "#9a6828", "fuku": "#b5447a", "hhp": "#00796b", "recent": "#3d4a5a"};
 function switchMode(m) {
   mode = m;
-  document.documentElement.style.setProperty('--mode-color', MODE_COLORS[m] || '#5a9e38');
   search = '';
   document.getElementById('searchInput').value = '';
   searchClear.style.display = 'none';
@@ -1461,6 +1449,8 @@ function switchMode(m) {
   const nav = document.getElementById('kanaNav');
   if (nav) nav.style.display = m === 'recent' ? 'none' : '';
   srcFilter = new Set();
+  const srcFiltersEl = document.getElementById('srcFilters');
+  if (srcFiltersEl) srcFiltersEl.style.display = m === 'recent' ? 'none' : '';
   buildSrcFilters();
   const catTabs = document.getElementById('catTabs');
   if (catTabs) catTabs.style.display = m === 'recent' ? 'none' : '';
@@ -1479,10 +1469,9 @@ function switchMode(m) {
 let _toastTimer = null;
 
 
-// トップへ戻るボタン
 window.addEventListener('scroll', () => {
-  const btn = document.getElementById('backToTop');
-  if (btn) btn.classList.toggle('show', window.scrollY > 300);
+  const b = document.getElementById('backToTop');
+  if (b) b.classList.toggle('show', window.scrollY > 300);
 }, { passive: true });
 function openTips() {
   document.getElementById('tipsOverlay').classList.add('show');
@@ -1657,8 +1646,6 @@ function renderTabs() {
 
 function render() {
   document.getElementById('newToggleBtn').className = 'new-toggle-btn' + (showNew ? '' : ' off');
-  const sfEl = document.getElementById('srcFilters');
-  if (sfEl) sfEl.style.display = mode === 'recent' ? 'none' : '';
   if (mode === 'recent') { renderRecent(); return; }
   isViewing = !!(viewingUser && viewingUser !== currentUser);
   renderTabs();
@@ -1671,8 +1658,7 @@ function render() {
   const word = mode === 'kagu' ? '個収集済' : mode === 'recipe' ? '個習得済' : mode === 'art' ? '個寄贈済' : '個入手済';
   const pctAll = totalAll ? Math.round(ownedAll / totalAll * 100) : 0;
   document.getElementById('headerStats').innerHTML =
-    '<span style="font-size:9px;opacity:.7">残り ' + (totalAll - ownedAll) + '</span> ' +
-    '<span style="font-size:16px;font-weight:900">' + pctAll + '%</span>';
+    '<span style="font-size:10px;opacity:.75">残り' + (totalAll - ownedAll) + '</span>&nbsp;<b style="font-size:17px">' + pctAll + '%</b>';
 
   const main = document.getElementById('main');
   main.innerHTML = '';
@@ -1683,9 +1669,6 @@ function render() {
   }
 
   if (currentCat[mode] === 'すべて') {
-    // src-filters をメイン上部に挿入
-    const sf = document.getElementById('srcFilters');
-    if (sf) main.appendChild(sf);
     // 全カテゴリを混ぜてあいうえお順に1つのリストで表示
     let allItems = cats.flatMap(cat => items[cat].map(i => ({...i, cat})));
     if (q) allItems = allItems.filter(i => matchSearch(i.ja, i.en, q) || i.cat.includes(q));
@@ -1699,10 +1682,6 @@ function render() {
     main.appendChild(sec);
     return;
   }
-
-  // src-filters をメイン上部に挿入
-  const sfEl = document.getElementById('srcFilters');
-  if (sfEl) main.appendChild(sfEl);
 
   for (const cat of [currentCat[mode]]) {
     let itms = applySrcFilter(items[cat]);
