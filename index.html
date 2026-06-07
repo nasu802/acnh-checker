@@ -427,6 +427,57 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Tips モーダル */
+#tipsOverlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 5000; display: none; align-items: flex-end; justify-content: center;
+}
+#tipsOverlay.show { display: flex; }
+#tipsSheet {
+  background: white; border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 640px;
+  max-height: 85vh; overflow-y: auto;
+  padding: 20px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+}
+#tipsSheet h2 {
+  font-size: 17px; font-weight: 800; margin: 0 0 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.tips-close {
+  margin-left: auto; background: #eee; border: none; border-radius: 50%;
+  width: 28px; height: 28px; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.tip-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid #f0f0f0;
+}
+.tip-item:last-child { border-bottom: none; }
+.tip-icon {
+  font-size: 26px; flex-shrink: 0; width: 36px; text-align: center; margin-top: 2px;
+}
+.tip-body { flex: 1; min-width: 0; }
+.tip-title { font-size: 14px; font-weight: 800; color: #222; margin-bottom: 4px; }
+.tip-desc { font-size: 13px; color: #555; line-height: 1.55; }
+.tip-desc b { color: #222; font-weight: 700; }
+.tip-badge {
+  display: inline-block; padding: 1px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; vertical-align: middle;
+  background: #eee; color: #444;
+}
+.tip-badge.green { background: #5a9e38; color: white; }
+.tip-badge.blue  { background: #4488cc; color: white; }
+.tip-badge.orange{ background: #f5a623; color: white; }
+/* ヘルプボタン */
+.help-btn {
+  background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
+  width: 28px; height: 28px; color: white; font-size: 15px; font-weight: 800;
+  cursor: pointer; font-family: inherit; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.help-btn:hover { background: rgba(255,255,255,0.35); }
 .new-toggle-btn { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1.5px solid #5a9e38; background: #5a9e38; color: white; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
 .new-toggle-btn.off { background: white; color: #999; border-color: #ccc; }
 .select-bar {
@@ -711,6 +762,91 @@ body.mode-recent { background: #f0f0f5; }
 </head>
 <body class="mode-kagu">
 
+<div id="tipsOverlay" onclick="if(event.target===this)closeTips()">
+<div id="tipsSheet">
+  <h2>💡 Tips &amp; 裏技 <button class="tips-close" onclick="closeTips()">✕</button></h2>
+  <div class="tip-item">
+    <div class="tip-icon">👆</div>
+    <div class="tip-body">
+      <div class="tip-title">タップでチェック・取り消し</div>
+      <div class="tip-desc">未収集アイテムをタップ → 収集済みに。<br>収集済みアイテムをタップ → 取り消し。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">🔗</div>
+    <div class="tip-body">
+      <div class="tip-title">裏技: 複数タブで連動チェック</div>
+      <div class="tip-desc">家具とHHP、服とレシピで同じアイテムがある場合、<b>どちらかでチェックすると両方に反映</b>されます。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">☑️</div>
+    <div class="tip-body">
+      <div class="tip-title">裏技: まとめて削除（選択モード）</div>
+      <div class="tip-desc">収集済みエリアの <b>「選択」ボタン</b> を押すと複数選択できます。間違えてチェックしたものをまとめて消せます。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">🌈</div>
+    <div class="tip-body">
+      <div class="tip-title">裏技: NEW表示で入手順をカラー表示</div>
+      <div class="tip-desc"><b>「NEW表示」ボタン</b> をオンにすると収集済みアイテムが入手した順に色付きで表示されます（新しいほど濃い色）。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">🈶</div>
+    <div class="tip-body">
+      <div class="tip-title">かな行ナビで素早くジャンプ</div>
+      <div class="tip-desc">「あかさた…」の行ナビをタップすると<b>その行のアイテムまでスクロール</b>します。色付きの行は未収集あり。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">🛒</div>
+    <div class="tip-body">
+      <div class="tip-title">入手方法で絞り込み</div>
+      <div class="tip-desc">
+        <span class="tip-badge orange">🪙ポキ</span> ベル購入　<span class="tip-badge blue">⭐マイル</span> マイル交換　<span class="tip-badge green">📋レシピ</span> DIY作成<br>
+        複数同時にオンにすると「どれか」で絞り込みます。
+      </div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">👤</div>
+    <div class="tip-body">
+      <div class="tip-title">他の人の進捗を見る</div>
+      <div class="tip-desc">ヘッダーのユーザー名バッジをタップすると<b>他のプレイヤーの収集状況</b>に切り替えられます。<br><b>みんな</b>ボタンで全員を比較できます。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">🕐</div>
+    <div class="tip-body">
+      <div class="tip-title">最近入手タブ</div>
+      <div class="tip-desc">チェックしたアイテムを時系列で確認できます。<br>タップすると収集済みから取り消せます。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">↩️</div>
+    <div class="tip-body">
+      <div class="tip-title">裏技: アンドゥ・リドゥ</div>
+      <div class="tip-desc">PC: <b>Ctrl+Z</b> で直前の操作を取り消し、<b>Ctrl+Y</b> でやり直し。<br>最大50回分の操作を保持します。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">↻</div>
+    <div class="tip-body">
+      <div class="tip-title">別端末で反映されないときは</div>
+      <div class="tip-desc">ヘッダーの <b>↻</b> ボタンを押すとクラウドから再読み込みします。<br>読み込み件数がトーストで表示されます。</div>
+    </div>
+  </div>
+  <div class="tip-item">
+    <div class="tip-icon">💾</div>
+    <div class="tip-body">
+      <div class="tip-title">バックアップ</div>
+      <div class="tip-desc">ヘッダーの <b>👤名前</b> をタップ → バックアップ から<br>JSONファイルで書き出し・読み込みができます。</div>
+    </div>
+  </div>
+</div>
+</div>
 <div id="toast"></div>
 <div id="cloudLoadOverlay"><div class="cloud-spinner"></div><div>クラウドから読み込み中...</div></div>
 <div id="userModalOverlay" class="user-modal-overlay" style="display:none">
@@ -738,7 +874,7 @@ body.mode-recent { background: #f0f0f5; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607q</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="help-btn" onclick="openTips()" title="使い方">?</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607s</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -1297,6 +1433,13 @@ function switchMode(m) {
 
 // トースト通知
 let _toastTimer = null;
+
+function openTips() {
+  document.getElementById('tipsOverlay').classList.add('show');
+}
+function closeTips() {
+  document.getElementById('tipsOverlay').classList.remove('show');
+}
 function showToast(msg, type='', duration=2800) {
   const el = document.getElementById('toast');
   if (!el) return;
