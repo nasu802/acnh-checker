@@ -289,9 +289,9 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 .list-row { display: flex; align-items: center; padding: 11px 14px; border-bottom: 1px solid #f0f0f0; font-size: 14px; cursor: pointer; gap: 10px; background: white; user-select: none; }
 .list-row:last-child { border-bottom: none; }
 .list-row:active { background: #f5f5f5; }
-.list-row .list-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #ccc; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.list-row .list-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #d8d8d8; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: transparent; }
 .list-row.list-checked .list-check { background: var(--mode-color, #5a9e38); border-color: var(--mode-color, #5a9e38); color: white; }
-.list-row.list-checked .list-name { color: #aaa; text-decoration: line-through; }
+.list-row.list-checked .list-name { color: #b0b0b0; text-decoration: line-through; }
 .list-row .list-name { flex: 1; }
 .list-row .list-src { font-size: 11px; color: #bbb; flex-shrink: 0; }
 .done-items-list { display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; border: 1px solid #eee; margin-top: 4px; }
@@ -579,55 +579,29 @@ body.mode-hhp { background: #e0f2f1; }
 .recent-refresh-wrap {
   display: flex;
   justify-content: center;
-  padding: 16px 16px 4px;
+  padding: 12px 16px 4px;
 }
 .recent-refresh-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 10px 22px;
-  border-radius: 24px;
-  border: none;
+  gap: 6px;
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 1.5px solid #c8e6b8;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  color: white;
-  background: linear-gradient(135deg, #5a9e38 0%, #3a7a20 100%);
-  box-shadow: 0 3px 12px rgba(90,158,56,0.35), 0 1px 3px rgba(0,0,0,0.12);
-  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
-  letter-spacing: 0.02em;
-  position: relative;
-  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  color: #3a7a20;
+  background: #f0f9ea;
+  transition: background 0.15s, transform 0.12s;
+  letter-spacing: 0.01em;
 }
-.recent-refresh-btn:active {
-  transform: scale(0.96);
-  box-shadow: 0 1px 6px rgba(90,158,56,0.25);
-}
-.recent-refresh-btn:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-.recent-refresh-btn .refresh-icon {
-  font-size: 17px;
-  display: inline-block;
-  transition: transform 0.4s;
-}
-.recent-refresh-btn.loading .refresh-icon {
-  animation: spin360 0.7s linear infinite;
-}
-@keyframes spin360 {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.recent-refresh-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
-  pointer-events: none;
-}
-.recent-refresh-label { font-size: 11px; color: #aaa; text-align: center; padding-bottom: 8px; }
+.recent-refresh-btn:active { transform: scale(0.96); background: #e0f4d4; }
+.recent-refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.recent-refresh-btn .refresh-icon { font-size: 14px; display: inline-block; }
+.recent-refresh-btn.loading .refresh-icon { animation: spin360 0.6s linear infinite; }
+@keyframes spin360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 /* 最近入手: ニュートラルスレート */
 body.mode-recent { background: #f0f0f5; }
 .mode-recent header { background: #3d4a5a; }
@@ -793,7 +767,6 @@ body.mode-recent { background: #f0f0f5; }
 
 
 <div id='toast'></div>
-<button id='backToTop' onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <div id="cloudLoadOverlay"><div class="cloud-spinner"></div><div>クラウドから読み込み中...</div></div>
 <div id="userModalOverlay" class="user-modal-overlay" style="display:none">
   <div class="user-modal-box">
@@ -1363,6 +1336,8 @@ function switchMode(m) {
   document.getElementById('headerTitle').textContent = m === 'recent' ? '最近入手' : LABELS[m];
   const controls = document.getElementById('mainControls');
   if (controls) controls.style.display = m === 'recent' ? 'none' : '';
+  const ctrlRow = document.getElementById('ctrlBtnsRow');
+  if (ctrlRow) ctrlRow.style.display = m === 'recent' ? 'none' : '';
   const nav = document.getElementById('kanaNav');
   if (nav) nav.style.display = m === 'recent' ? 'none' : '';
   srcFilter = new Set();
@@ -1386,10 +1361,7 @@ function switchMode(m) {
 let _toastTimer = null;
 
 
-window.addEventListener('scroll', () => {
-  const b = document.getElementById('backToTop');
-  if (b) b.classList.toggle('show', window.scrollY > 300);
-}, { passive: true });
+
 function showToast(msg, type='', duration=2800) {
   const el = document.getElementById('toast');
   if (!el) return;
