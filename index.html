@@ -313,6 +313,14 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
   line-height: 1.3;
   min-height: 44px;
 }
+
+.chip-all-done {
+  background: #e8f5e1;
+  color: #3a7a20;
+  border-color: #b2d99a;
+  opacity: 0.75;
+}
+.chip-all-done::before { content: '✓ '; font-size: 10px; }
 .chip-todo {
   background: white;
   border-color: #ccc;
@@ -1595,6 +1603,44 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q, owned) {
   const doneOpen = state[mode].doneOpen;
   const doneLabel = mode === 'kagu' ? '✅ 収集済み' : mode === 'recipe' ? '✅ 習得済み' : mode === 'art' ? '✅ 寄贈済み' : '✅ 入手済み';
   const emptyMsg  = mode === 'kagu' ? '🎉 すべて収集済み！' : mode === 'recipe' ? '🎉 すべて習得済み！' : mode === 'art' ? '🎉 すべて寄贈済み！' : '🎉 すべて入手済み！';
+
+  // 「全て」スコープ: 収集済み・未収集を同一リストに統合表示
+  if (searchScope === 'all') {
+    const allItems = [...todoItems, ...doneItems].sort(
+      sortOrder === 'new' ? (a,b) => sortByNew(a,b,owned) : sortByKana
+    );
+    if (!allItems.length) return;
+    if (displayMode === 'list') {
+      const list = document.createElement('div');
+      list.className = 'items-list';
+      for (const item of allItems) {
+        const isDone = !!owned[item.en];
+        const row = document.createElement('div');
+        row.className = 'list-row' + (isDone ? ' list-checked' : '');
+        row.innerHTML = '<span class="list-check">' + (isDone ? '✓' : '') + '</span>' +
+          '<span class="list-name">' + item.ja + '</span>' +
+          '<span class="list-src">' + getSrcEmoji(item.s) + '</span>';
+        if (!isViewing) row.onclick = isDone ? () => uncheck(item.en) : () => check(item.en, row);
+        list.appendChild(row);
+      }
+      sec.appendChild(list);
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'items-grid';
+      for (const item of allItems) {
+        const isDone = !!owned[item.en];
+        const chip = document.createElement('span');
+        chip.className = isDone ? 'chip chip-all-done' : 'chip chip-todo';
+        chip.textContent = item.ja;
+        chip.dataset.en = item.en;
+        if (isDone) chip.title = '✓ 収集済み';
+        if (!isViewing) chip.onclick = isDone ? () => uncheck(item.en) : () => check(item.en, chip);
+        grid.appendChild(chip);
+      }
+      sec.appendChild(grid);
+    }
+    return;
+  }
 
   if (searchScope !== 'done') {
     if (todoItems.length > 0) {
