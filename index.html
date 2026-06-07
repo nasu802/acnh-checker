@@ -141,7 +141,7 @@ header h1 { font-size: 15px; font-weight: 800; letter-spacing: 0.02em; flex-shri
   min-width: 0;
 }
 input[type=search] {
-  padding: 7px 32px 7px 14px;
+  padding: 7px 72px 7px 14px;
   border: 1.5px solid #d8d8d8;
   border-radius: 22px;
   font-size: 14px;
@@ -158,6 +158,28 @@ input[type=search] {
 }
 input[type=search]:focus { border-color: var(--mode-color, #5a9e38); background: white; }
 input[type=search]::-webkit-search-cancel-button { display: none; }
+
+.partial-in-search {
+  position: absolute;
+  right: 32px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 3px 7px;
+  border-radius: 10px;
+  border: 1.5px solid #ccc;
+  background: white;
+  color: #aaa;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.3;
+  transition: all .12s;
+}
+.partial-in-search.active {
+  background: var(--mode-color, #5a9e38);
+  color: white;
+  border-color: var(--mode-color, #5a9e38);
+}
 #searchClear {
   position: absolute;
   right: 6px;
@@ -828,6 +850,7 @@ body.mode-recent { background: #f0f0f5; }
 <div class="controls" id="mainControls">
   <div class="search-wrap">
     <input type="search" id="searchInput" placeholder="🔍  名前で検索...">
+    <button id="partialBtn" class="partial-in-search active" onclick="togglePartial()" title="部分一致で検索">含む</button>
     <button id="searchClear" tabindex="-1">✕</button>
   </div>
 </div>
@@ -840,7 +863,6 @@ body.mode-recent { background: #f0f0f5; }
   <div class="ctrl-sep"></div>
   <button class="ctrl-btn" id="displayModeBtn" onclick="toggleDisplayMode()">リスト</button>
   <div class="ctrl-sep"></div>
-  <button class="ctrl-btn active" id="partialBtn" onclick="togglePartial()">部分一致</button>
   <div class="ctrl-sep"></div>
   <div id="srcFilters" style="display:contents"></div>
 </div>
@@ -1240,21 +1262,22 @@ function buildPartyItemControls() {
   }
   const filterEl = document.getElementById('partyFilterBtns');
   filterEl.innerHTML = '';
+  for (const f of [{key:'nobody',label:'誰も未入手'},{key:'some',label:'誰かが持ってる'},{key:'everyone',label:'全員持ってる'},{key:'all',label:'全部'}]) {
+    const btn = document.createElement('button');
+    btn.className = 'party-filter-btn' + (f.key === partyItemFilter ? ' active' : '');
+    btn.textContent = f.label;
+    btn.onclick = () => { partyItemFilter = f.key; buildPartyItemControls(); renderPartyItems(); };
+    filterEl.appendChild(btn);
+  }
   if (partySelectedUser) {
-    // ユーザー選択中：未入手/収集済みトグル
+    const sep = document.createElement('span');
+    sep.style.cssText = 'width:1px;height:16px;background:#ddd;display:inline-block;margin:0 4px;vertical-align:middle';
+    filterEl.appendChild(sep);
     for (const f of [{key:'todo', label:'未入手'}, {key:'done', label:'収集済み'}]) {
       const btn = document.createElement('button');
       btn.className = 'party-filter-btn' + (partyUserView === f.key ? ' active' : '');
       btn.textContent = f.label;
       btn.onclick = () => { partyUserView = f.key; buildPartyItemControls(); renderPartyItems(); };
-      filterEl.appendChild(btn);
-    }
-  } else {
-    for (const f of [{key:'nobody',label:'誰も未入手'},{key:'some',label:'誰かが持ってる'},{key:'everyone',label:'全員持ってる'},{key:'all',label:'全部'}]) {
-      const btn = document.createElement('button');
-      btn.className = 'party-filter-btn' + (f.key === partyItemFilter ? ' active' : '');
-      btn.textContent = f.label;
-      btn.onclick = () => { partyItemFilter = f.key; buildPartyItemControls(); renderPartyItems(); };
       filterEl.appendChild(btn);
     }
   }
@@ -1283,14 +1306,14 @@ function renderPartyItems() {
   const nq = normalizeDakuten(q);
   const filtered = cats.filter(item => {
     if (q && !normalizeDakuten(item.ja).includes(nq) && !item.en.toLowerCase().includes(q)) return false;
+    const haveCount = partyUserNames.filter(u => (partyAllData[u][partyItemMode] || new Set()).has(item.en)).length;
+    if (partyItemFilter === 'nobody'  && haveCount !== 0) return false;
+    if (partyItemFilter === 'some'    && !(haveCount > 0 && haveCount < n)) return false;
+    if (partyItemFilter === 'everyone'&& haveCount !== n) return false;
     if (partySelectedUser) {
       const has = (partyAllData[partySelectedUser][partyItemMode] || new Set()).has(item.en);
       return partyUserView === 'done' ? has : !has;
     }
-    const haveCount = partyUserNames.filter(u => (partyAllData[u][partyItemMode] || new Set()).has(item.en)).length;
-    if (partyItemFilter === 'nobody')   return haveCount === 0;
-    if (partyItemFilter === 'some')     return haveCount > 0 && haveCount < n;
-    if (partyItemFilter === 'everyone') return haveCount === n;
     return true;
   });
 
@@ -1926,7 +1949,7 @@ searchClear.addEventListener('mousedown', e => {
 });
 function togglePartial() {
   partialMatch = !partialMatch;
-  document.getElementById('partialBtn').className = 'ctrl-btn' + (partialMatch ? ' active' : '');
+  document.getElementById('partialBtn').className = 'partial-in-search' + (partialMatch ? ' active' : '');
   render();
 }
 
