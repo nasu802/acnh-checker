@@ -574,6 +574,60 @@ body.mode-hhp { background: #e0f2f1; }
 .mode-hhp .progress-fill { background: linear-gradient(90deg, #00796b, #26a69a); }
 .mode-hhp .cat-icon { background: #00796b; }
 .mode-hhp .kana-btn.hit { border-color: #00796b; color: #004d40; background: #e0f2f1; }
+
+/* 最近ページ 更新ボタン */
+.recent-refresh-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px 16px 4px;
+}
+.recent-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #5a9e38 0%, #3a7a20 100%);
+  box-shadow: 0 3px 12px rgba(90,158,56,0.35), 0 1px 3px rgba(0,0,0,0.12);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+}
+.recent-refresh-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 6px rgba(90,158,56,0.25);
+}
+.recent-refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.recent-refresh-btn .refresh-icon {
+  font-size: 17px;
+  display: inline-block;
+  transition: transform 0.4s;
+}
+.recent-refresh-btn.loading .refresh-icon {
+  animation: spin360 0.7s linear infinite;
+}
+@keyframes spin360 {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.recent-refresh-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+.recent-refresh-label { font-size: 11px; color: #aaa; text-align: center; padding-bottom: 8px; }
 /* 最近入手: ニュートラルスレート */
 body.mode-recent { background: #f0f0f5; }
 .mode-recent header { background: #3d4a5a; }
@@ -1975,6 +2029,22 @@ function loadHeaderUsers() {
 
 const RECENT_MODE_LABELS = { kagu: '家具', recipe: 'レシピ', music: 'とたけけ', art: '美術品', fuku: '服', hhp: 'HHP' };
 const RECENT_MODE_COLORS = { kagu: '#5a9e38', recipe: '#4488cc', music: '#d07040', art: '#9a6828', fuku: '#e91e8c', hhp: '#00796b' };
+
+async function recentRefresh() {
+  const btn = document.getElementById('recentRefreshBtn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.querySelector('.refresh-label-text').textContent = '読み込み中...';
+  try {
+    await loadFromCloud(false);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.querySelector('.refresh-label-text').textContent = '最新を読み込む';
+    renderRecent();
+  }
+}
 function renderRecent() {
   renderTabs();
   const main = document.getElementById('main');
@@ -2010,6 +2080,15 @@ function renderRecent() {
   document.getElementById('headerStats').textContent = noTsTotal + '個収集済み';
 
   if (!timedItems.length && noTsCount === 0) {
+    const refreshWrap2 = document.createElement('div');
+    refreshWrap2.className = 'recent-refresh-wrap';
+    const refreshBtn2 = document.createElement('button');
+    refreshBtn2.id = 'recentRefreshBtn';
+    refreshBtn2.className = 'recent-refresh-btn';
+    refreshBtn2.innerHTML = '<span class="refresh-icon">↻</span><span class="refresh-label-text">最新を読み込む</span>';
+    refreshBtn2.onclick = recentRefresh;
+    refreshWrap2.appendChild(refreshBtn2);
+    main.appendChild(refreshWrap2);
     const em = document.createElement('div');
     em.style.cssText = 'text-align:center;color:#aaa;padding:40px;font-size:14px;font-weight:700';
     em.textContent = 'まだ何も入手していません';
@@ -2027,6 +2106,17 @@ function renderRecent() {
     const day = Math.floor(diff / 86400000);
     return day + '日前';
   }
+
+  // 更新ボタン
+  const refreshWrap = document.createElement('div');
+  refreshWrap.className = 'recent-refresh-wrap';
+  const refreshBtn = document.createElement('button');
+  refreshBtn.id = 'recentRefreshBtn';
+  refreshBtn.className = 'recent-refresh-btn';
+  refreshBtn.innerHTML = '<span class="refresh-icon">↻</span><span class="refresh-label-text">最新を読み込む</span>';
+  refreshBtn.onclick = recentRefresh;
+  refreshWrap.appendChild(refreshBtn);
+  main.appendChild(refreshWrap);
 
   const sec = document.createElement('div');
   sec.className = 'recent-section';
