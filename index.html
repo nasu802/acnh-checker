@@ -29,7 +29,7 @@ body {
 .mode-tab {
   flex: 1;
   min-width: 52px;
-  padding: 8px 6px;
+  padding: 7px 6px;
   text-align: center;
   font-size: 12px;
   font-weight: 700;
@@ -60,11 +60,11 @@ body {
 /* ヘッダー */
 header {
   color: white;
-  padding: 8px 12px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.12);
   overflow: hidden;
   min-width: 0;
 }
@@ -110,9 +110,26 @@ header h1 { font-size: 15px; font-weight: 800; letter-spacing: 0.02em; flex-shri
   display: flex;
   gap: 6px;
   align-items: center;
-  border-bottom: 1px solid #ddd;
-  flex-wrap: wrap;
-  overflow: hidden;
+  border-bottom: none;
+}
+.ctrl-btns-row {
+  background: white;
+  padding: 6px 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  border-bottom: 1px solid #e8e8e8;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ctrl-btns-row::-webkit-scrollbar { display: none; }
+.ctrl-sep {
+  width: 1px;
+  height: 18px;
+  background: #e0e0e0;
+  flex-shrink: 0;
+  border-radius: 1px;
 }
 .search-wrap {
   position: relative;
@@ -122,20 +139,22 @@ header h1 { font-size: 15px; font-weight: 800; letter-spacing: 0.02em; flex-shri
   min-width: 0;
 }
 input[type=search] {
-  padding: 6px 32px 6px 14px;
-  border: 1.5px solid #ccc;
-  border-radius: 20px;
+  padding: 7px 32px 7px 14px;
+  border: 1.5px solid #d8d8d8;
+  border-radius: 22px;
   font-size: 14px;
   font-family: inherit;
   width: 0;
   flex: 1;
   min-width: 80px;
   outline: none;
-  background: white;
+  background: #f8f8f8;
   color: #222;
   -webkit-appearance: none;
   appearance: none;
+  transition: border-color .15s, background .15s;
 }
+input[type=search]:focus { border-color: var(--mode-color, #5a9e38); background: white; }
 input[type=search]::-webkit-search-cancel-button { display: none; }
 #searchClear {
   position: absolute;
@@ -425,19 +444,20 @@ input[type=search]::-webkit-search-cancel-button { display: none; }
 
 /* コントロールボタン統一スタイル */
 .ctrl-btn {
-  padding: 5px 10px;
+  padding: 4px 11px;
   font-size: 12px;
   font-weight: 700;
   font-family: inherit;
-  border: 1.5px solid #ccc;
-  border-radius: 16px;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 20px;
   background: white;
-  color: #888;
+  color: #777;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all .12s;
-  line-height: 1.4;
+  transition: background .12s, color .12s, border-color .12s;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
 }
 .ctrl-btn:hover { border-color: #aaa; color: #555; }
 .ctrl-btn.active {
@@ -757,7 +777,7 @@ body.mode-recent { background: #f0f0f5; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607y</span></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><span id="userBadge" class="user-badge" onclick="switchViewUser(currentUser)"></span><span id="syncIndicator" class="sync-indicator"></span><button class="sync-btn" id="syncBtn" onclick="manualSync()" title="クラウドから最新データを取得">↻</button><button class="party-btn" onclick="openParty()">みんな</button><div class="header-stats" id="headerStats">...</div><span style="font-size:9px;opacity:0.4;margin-left:6px">v0607z</span></header>
 <div id="userSwitcher"></div>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
@@ -786,14 +806,19 @@ body.mode-recent { background: #f0f0f5; }
     <input type="search" id="searchInput" placeholder="🔍  名前で検索...">
     <button id="searchClear" tabindex="-1">✕</button>
   </div>
+</div>
+<div class="ctrl-btns-row" id="ctrlBtnsRow">
   <button class="ctrl-btn active" data-v="todo" onclick="setScope('todo')">未収集</button>
   <button class="ctrl-btn" data-v="all"  onclick="setScope('all')">全て</button>
   <button class="ctrl-btn" data-v="done" onclick="setScope('done')">収集済</button>
-  <button class="ctrl-btn" id="newToggleBtn" onclick="toggleNewHighlight()">NEW</button>
-  <button class="ctrl-btn active" id="partialBtn" onclick="togglePartial()">部分一致</button>
+  <div class="ctrl-sep"></div>
   <button class="ctrl-btn active" id="sortKana" onclick="setSortOrder('kana')">あ順</button>
   <button class="ctrl-btn" id="sortNew"  onclick="setSortOrder('new')">新着順</button>
+  <div class="ctrl-sep"></div>
   <button class="ctrl-btn" id="displayModeBtn" onclick="toggleDisplayMode()">リスト</button>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn" id="newToggleBtn" onclick="toggleNewHighlight()">NEW</button>
+  <button class="ctrl-btn active" id="partialBtn" onclick="togglePartial()">部分一致</button>
 </div>
 
 <div class="src-filters" id="srcFilters"></div>
