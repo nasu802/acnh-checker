@@ -1224,12 +1224,14 @@ function saveModel() {
   localStorage.setItem(MODEL_KEY, JSON.stringify(modelState));
 }
 function modelBump(ja) {
+  if (isViewing) return;
   const cur = modelState.counts[ja] || 0;
   modelState.counts[ja] = cur >= 3 ? 0 : cur + 1;
   saveModel(); renderModel();
 }
 function modelToggleDone(ja, e) {
   if (e) e.stopPropagation();
+  if (isViewing) return;
   const kaguEn = MODEL_KAGU_MAP[ja];
   if (kaguEn) {
     if (state.kagu.owned[kaguEn]) {
@@ -1248,12 +1250,12 @@ function modelToggleDone(ja, e) {
   renderModel();
 }
 
-function renderModelTabs() {
+function renderModelTabs(kaguOwned) {
   const cats = Object.keys(DATA.model);
   const c = document.getElementById('catTabs');
   c.innerHTML = '';
   for (const cat of cats) {
-    const remain = DATA.model[cat].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !(state.kagu.owned[e]) : !modelState.done[i.ja]; }).length;
+    const remain = DATA.model[cat].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !(kaguOwned[e]) : !modelState.done[i.ja]; }).length;
     const btn = document.createElement('button');
     btn.className = 'cat-tab' + (currentCat.model === cat ? ' active' : '');
     btn.innerHTML = cat + '<span class="badge">' + remain + '</span>';
@@ -1263,7 +1265,11 @@ function renderModelTabs() {
 }
 
 function renderModel() {
-  renderModelTabs();
+  isViewing = !!(viewingUser && viewingUser !== currentUser);
+  const kaguOwned = (isViewing && otherUsersData[viewingUser])
+    ? (otherUsersData[viewingUser]['kagu'] || {})
+    : state.kagu.owned;
+  renderModelTabs(kaguOwned);
   const cat = currentCat.model;
   const items = DATA.model[cat] || [];
   const q = search.toLowerCase();
@@ -1271,7 +1277,7 @@ function renderModel() {
 
   const allCats = Object.keys(DATA.model);
   const totalAll = allCats.reduce((s, c) => s + DATA.model[c].length, 0);
-  const doneAll  = allCats.reduce((s, c) => s + DATA.model[c].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(state.kagu.owned[e]) : !!(modelState.done[i.ja]); }).length, 0);
+  const doneAll  = allCats.reduce((s, c) => s + DATA.model[c].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(kaguOwned[e]) : !!(modelState.done[i.ja]); }).length, 0);
   const pct = totalAll ? Math.round(doneAll / totalAll * 100) : 0;
   document.getElementById('headerStats').innerHTML =
     '<span style="font-size:10px;opacity:.75">残り' + (totalAll - doneAll) + '</span>&nbsp;<b style="font-size:17px">' + pct + '%</b>';
@@ -1280,7 +1286,7 @@ function renderModel() {
   main.innerHTML = '';
 
   const catTotal = items.length;
-  const catDone  = items.filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(state.kagu.owned[e]) : !!(modelState.done[i.ja]); }).length;
+  const catDone  = items.filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(kaguOwned[e]) : !!(modelState.done[i.ja]); }).length;
   const catPct   = catTotal ? Math.round(catDone / catTotal * 100) : 0;
 
   const sec = document.createElement('div');
@@ -1303,7 +1309,7 @@ function renderModel() {
   for (const item of filtered) {
     const count = modelState.counts[item.ja] || 0;
     const _kaguEn = MODEL_KAGU_MAP[item.ja];
-    const done  = _kaguEn ? !!(state.kagu.owned[_kaguEn]) : !!(modelState.done[item.ja]);
+    const done  = _kaguEn ? !!(kaguOwned[_kaguEn]) : !!(modelState.done[item.ja]);
     let cls = 'model-chip';
     if (done)       cls += ' model-done-chip';
     else if (count === 3) cls += ' model-c3';
@@ -1312,7 +1318,8 @@ function renderModel() {
 
     const chip = document.createElement('div');
     chip.className = cls;
-    chip.onclick = () => modelBump(item.ja);
+    if (!isViewing) chip.onclick = () => modelBump(item.ja);
+    else chip.style.cursor = 'default';
 
     const dots = document.createElement('span');
     dots.className = 'model-dots';
@@ -1331,7 +1338,7 @@ function renderModel() {
     const star = document.createElement('button');
     star.className = 'model-star-btn' + (done ? ' active' : '');
     star.textContent = done ? '★' : '☆';
-    star.onclick = (e) => modelToggleDone(item.ja, e);
+    if (!isViewing) star.onclick = (e) => modelToggleDone(item.ja, e);
     chip.appendChild(star);
 
     grid.appendChild(chip);
