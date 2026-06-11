@@ -2120,7 +2120,7 @@ function render() {
     if (q) allItems = allItems.filter(i => matchSearch(i.ja, i.en, q) || i.cat.includes(q));
     allItems = applySrcFilter(allItems);
     const todoItems = allItems.filter(i => !owned[i.en]).sort((a,b) => sortOrder === 'new' ? sortByNew(a,b,owned) : sortByKana(a,b));
-    const doneItems = allItems.filter(i =>  owned[i.en]).sort((a,b) => owned[a.en] - owned[b.en]);
+    const doneItems = allItems.filter(i =>  owned[i.en]).sort((a,b) => sortOrder === "new" ? (owned[b.en] - owned[a.en]) : sortByKana(a,b));
 
     const sec = document.createElement('div');
     sec.className = 'section-block';
@@ -2133,7 +2133,7 @@ function render() {
     let itms = applySrcFilter(items[cat]);
     if (q) itms = itms.filter(i => matchSearch(i.ja, i.en, q));
     const todoItems = itms.filter(i => !owned[i.en]).sort((a,b) => sortOrder === 'new' ? sortByNew(a,b,owned) : sortByKana(a,b));
-    const doneItems = itms.filter(i => owned[i.en]).sort((a, b) => owned[a.en] - owned[b.en]);
+    const doneItems = itms.filter(i => owned[i.en]).sort((a, b) => sortOrder === "new" ? (owned[b.en] - owned[a.en]) : sortByKana(a,b));
     if (!todoItems.length && !doneItems.length) continue;
 
     const total = items[cat].length;
