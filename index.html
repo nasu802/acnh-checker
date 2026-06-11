@@ -1887,7 +1887,7 @@ function switchMode(m) {
   if (nav) nav.style.display = (m === 'recent' || m === 'model') ? 'none' : '';
   srcFilter = new Set();
   const srcFiltersEl = document.getElementById('srcFilters');
-  if (srcFiltersEl) srcFiltersEl.style.display = (m === 'recent' || m === 'model') ? 'none' : 'contents';
+  if (srcFiltersEl) srcFiltersEl.style.display = (m === 'kagu') ? 'contents' : 'none';
   buildSrcFilters();
   const catTabs = document.getElementById('catTabs');
   if (catTabs) catTabs.style.display = m === 'recent' ? 'none' : '';
@@ -1918,9 +1918,9 @@ function showToast(msg, type='', duration=2800) {
 
 // 入手方法フィルター
 const SRC_DEFS = [
-  { code: 'p', label: '🪙ポキ',   cls: 'active-p' },
-  { code: 'm', label: '⭐マイル', cls: 'active-m' },
-  { code: 'r', label: '📋レシピ', cls: 'active-r' },
+  { code: 'p', label: 'ポキ',   cls: 'active-p' },
+  { code: 'm', label: 'マイル', cls: 'active-m' },
+  { code: 'r', label: 'レシピ', cls: 'active-r' },
 ];
 function buildSrcFilters() {
   const wrap = document.getElementById('srcFilters');
