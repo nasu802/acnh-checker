@@ -679,6 +679,16 @@ body.mode-model { background: #eef5e0; }
 .model-ctrl-btn.detail-btn.active { background: #5a9e38; }
 .season-divider { width: 1px; height: 20px; background: #ddd; flex-shrink: 0; }
 
+
+/* 時間ハイライト */
+.model-chip.time-active {
+  box-shadow: 0 0 0 2.5px #ff9800, 0 2px 6px rgba(255,152,0,0.3);
+}
+.model-chip.time-inactive {
+  opacity: 0.32;
+  filter: grayscale(0.4);
+}
+.model-ctrl-btn.time-btn.active { background: #ff9800; color: white; border-color: transparent; }
 /* 詳細表示 */
 .model-detail {
   font-size: 10px; color: #888; font-weight: 700;
@@ -1075,6 +1085,7 @@ let selectMode = false;
 let hemisphere = localStorage.getItem('acnh_hemisphere') || 'north';
 let modelDetailMode = false;
 let modelSeason = 'now';
+let modelTimeMode = false;
 let selectedItems = new Set();
 let viewingUser = null;
 let otherUsersData = {};
@@ -1395,6 +1406,13 @@ function renderModel() {
   detBtn.onclick = () => { modelDetailMode = !modelDetailMode; render(); };
   ctrl.appendChild(detBtn);
 
+  // 時間ハイライトボタン
+  const timeHlBtn = document.createElement('button');
+  timeHlBtn.className = 'model-ctrl-btn time-btn' + (modelTimeMode ? ' active' : '');
+  timeHlBtn.textContent = '🕐時間';
+  timeHlBtn.onclick = () => { modelTimeMode = !modelTimeMode; render(); };
+  ctrl.appendChild(timeHlBtn);
+
   const div1 = document.createElement('span'); div1.className = 'season-divider'; ctrl.appendChild(div1);
 
   // 今月
@@ -1453,6 +1471,9 @@ function renderModel() {
     const wrap = document.createElement('div');
     wrap.className = 'model-chip-wrap';
 
+    if (modelTimeMode && item.time) {
+      chipCls += isActiveNow(item.time) ? ' time-active' : ' time-inactive';
+    }
     const chip = document.createElement('div');
     chip.className = chipCls;
     if (!isViewing) chip.onclick = () => modelBump(item.ja);
@@ -1550,6 +1571,19 @@ function formatMonths(months) {
   }
   groups.push([start, prev]);
   return groups.map(([s,e]) => s === e ? s+'月' : s+'〜'+e+'月').join('・');
+}
+
+// 今の時間に出現するか（時間文字列をパース）
+function isActiveNow(timeStr) {
+  if (!timeStr || timeStr === '終日') return true;
+  const h = new Date().getHours();
+  return timeStr.split('・').some(part => {
+    const m = part.match(/(\d+)[時]?[〜~](\d+)時/);
+    if (!m) return false;
+    const s = parseInt(m[1]), e = parseInt(m[2]);
+    if (s < e) return h >= s && h < e;
+    return h >= s || h < e; // 深夜またがり
+  });
 }
 // ========== /設定モーダル ==========
 
