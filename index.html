@@ -671,11 +671,13 @@ body.mode-model { background: #eef5e0; }
   padding: 8px 12px 4px; align-items: center;
 }
 .model-ctrl-btn {
-  padding: 5px 11px; border-radius: 16px; border: 1.5px solid #ccc;
+  padding: 5px 12px; border-radius: 12px; border: 1.5px solid #ddd;
   background: white; font-size: 12px; font-weight: 700; font-family: inherit;
-  cursor: pointer; color: #666; transition: all 0.12s; white-space: nowrap;
+  cursor: pointer; color: #888; transition: all 0.12s; white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.model-ctrl-btn.active { color: white; border-color: transparent; }
+.model-ctrl-btn:hover { border-color: #bbb; }
+.model-ctrl-btn.active { color: white; border-color: transparent; box-shadow: none; }
 .model-ctrl-btn.detail-btn.active { background: #5a9e38; }
 .season-divider { width: 1px; height: 20px; background: #ddd; flex-shrink: 0; }
 
@@ -698,41 +700,49 @@ body.mode-model { background: #eef5e0; }
 }
 /* 詳細表示 */
 .model-detail {
-  font-size: 10px; color: #888; font-weight: 700;
-  display: flex; gap: 6px; flex-wrap: wrap;
+  font-size: 10px; color: #999; font-weight: 600;
+  display: flex; gap: 0; flex-wrap: wrap; align-items: center;
   margin-top: 3px; padding-left: 2px;
+  background: #faf8f4; border-radius: 8px; padding: 3px 6px;
+}
+.model-detail-sep {
+  color: #ccc; margin: 0 4px; font-size: 9px;
 }
 .model-chip-wrap { display: inline-flex; flex-direction: column; }
 .model-grid { align-items: flex-start; }
 
 .model-month-btn {
-  padding: 4px 7px; border-radius: 10px; border: 1.5px solid #ccc;
+  padding: 4px 6px; border-radius: 10px; border: 1.5px solid #e0e0e0;
   background: white; font-size: 11px; font-weight: 700; font-family: inherit;
-  cursor: pointer; color: #666; transition: all 0.12s; white-space: nowrap;
-  min-width: 28px; text-align: center;
+  cursor: pointer; color: #999; transition: all 0.12s; white-space: nowrap;
+  min-width: 30px; text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
+.model-month-btn:hover { border-color: #bbb; }
 .model-month-btn.active {
-  background: #1976d2; color: white; border-color: #1976d2;
+  background: #6aab3a; color: white; border-color: transparent; box-shadow: none;
 }
 .model-month-btn.now-btn.active {
-  background: #5a9e38; border-color: #5a9e38;
+  background: #4a8f2c; border-color: transparent;
 }
 .model-month-btn.all-btn.active {
-  background: #666; border-color: #666;
+  background: #888; border-color: transparent;
 }
 /* 詳細: condition */
 .model-condition {
-  background: #fff3e0; color: #e65100; border-radius: 6px;
-  padding: 1px 5px; font-size: 10px; font-weight: 700;
+  background: #ffe0b2; color: #e65100; border-radius: 6px;
+  padding: 1px 6px; font-size: 10px; font-weight: 700;
+  margin-left: 4px;
 }
 /* 設定アイコン */
 .settings-btn {
-  background: rgba(255,255,255,0.2); border: none; border-radius: 8px;
-  color: white; font-size: 15px; width: 28px; height: 28px;
+  background: rgba(255,255,255,0.18); border: none; border-radius: 10px;
+  color: white; font-size: 11px; font-weight: 800; font-family: inherit;
+  padding: 4px 9px; height: 28px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  flex-shrink: 0; letter-spacing: 0.02em;
 }
-.settings-btn:hover { background: rgba(255,255,255,0.35); }
+.settings-btn:hover { background: rgba(255,255,255,0.32); }
 
 /* 設定モーダル */
 .settings-overlay {
@@ -966,7 +976,7 @@ body.mode-recent { background: #f0f0f5; }
 
 <div id="settingsOverlay" class="settings-overlay" style="display:none" onclick="if(event.target===this)closeSettings()">
   <div class="settings-box">
-    <h2>⚙️ 設定</h2>
+    <h2>設定</h2>
     <div class="settings-row">
       <span class="settings-label">🌏 半球</span>
       <div class="settings-toggle">
@@ -994,7 +1004,7 @@ body.mode-recent { background: #f0f0f5; }
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
 </div>
 
-<header><h1 id="headerTitle">家具チェッカー</h1><button class="party-btn" onclick="openParty()">みんな</button><button class="settings-btn" onclick="openSettings()" title="設定">⚙️</button><span id="syncIndicator" class="sync-indicator"></span><div id="userSwitcher"></div><div class="header-stats" id="headerStats">...</div></header>
+<header><h1 id="headerTitle">家具チェッカー</h1><button class="party-btn" onclick="openParty()">みんな</button><button class="settings-btn" onclick="openSettings()">設定</button><span id="syncIndicator" class="sync-indicator"></span><div id="userSwitcher"></div><div class="header-stats" id="headerStats">...</div></header>
 
 <div id="partyOverlay" class="party-overlay" style="display:none" onclick="if(event.target===this)closeParty()">
   <div class="party-sheet">
@@ -1417,7 +1427,7 @@ function renderModel() {
   // 時間ハイライトボタン
   const timeHlBtn = document.createElement('button');
   timeHlBtn.className = 'model-ctrl-btn time-btn' + (modelTimeMode ? ' active' : '');
-  timeHlBtn.textContent = '🕐時間';
+  timeHlBtn.textContent = '時間';
   timeHlBtn.onclick = () => {
     modelTimeMode = !modelTimeMode;
     if (modelTimeMode && modelCustomHour === null) {
@@ -1535,8 +1545,9 @@ function renderModel() {
       const det = document.createElement('div');
       det.className = 'model-detail';
       const monthStr = formatMonths(item.months);
-      let detHTML = '📅' + monthStr + '&nbsp;🕐' + item.time + '&nbsp;📍' + item.place;
-      if (item.condition) detHTML += '&nbsp;<span class="model-condition">⚠️' + item.condition + '</span>';
+      const sep = '<span class="model-detail-sep">｜</span>';
+      let detHTML = monthStr + sep + item.time + sep + item.place;
+      if (item.condition) detHTML += '<span class="model-condition">' + item.condition + '</span>';
       det.innerHTML = detHTML;
       wrap.appendChild(det);
     }
