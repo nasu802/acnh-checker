@@ -689,6 +689,13 @@ body.mode-model { background: #eef5e0; }
   filter: grayscale(0.4);
 }
 .model-ctrl-btn.time-btn.active { background: #ff9800; color: white; border-color: transparent; }
+
+.model-time-input {
+  padding: 4px 6px; border-radius: 10px; border: 1.5px solid #ff9800;
+  font-size: 12px; font-weight: 700; font-family: inherit;
+  color: #e65100; background: #fff8f0; width: 82px;
+  cursor: pointer; outline: none;
+}
 /* 詳細表示 */
 .model-detail {
   font-size: 10px; color: #888; font-weight: 700;
@@ -1086,6 +1093,7 @@ let hemisphere = localStorage.getItem('acnh_hemisphere') || 'north';
 let modelDetailMode = false;
 let modelSeason = 'now';
 let modelTimeMode = false;
+let modelCustomHour = null;
 let selectedItems = new Set();
 let viewingUser = null;
 let otherUsersData = {};
@@ -1410,8 +1418,32 @@ function renderModel() {
   const timeHlBtn = document.createElement('button');
   timeHlBtn.className = 'model-ctrl-btn time-btn' + (modelTimeMode ? ' active' : '');
   timeHlBtn.textContent = '🕐時間';
-  timeHlBtn.onclick = () => { modelTimeMode = !modelTimeMode; render(); };
+  timeHlBtn.onclick = () => {
+    modelTimeMode = !modelTimeMode;
+    if (modelTimeMode && modelCustomHour === null) {
+      // 初めてONにしたとき現在時刻をセット
+      modelCustomHour = new Date().getHours();
+    }
+    render();
+  };
   ctrl.appendChild(timeHlBtn);
+
+  // 時間入力（🕐時間ONのときのみ表示）
+  if (modelTimeMode) {
+    const timeInput = document.createElement('input');
+    timeInput.type = 'time';
+    timeInput.className = 'model-time-input';
+    const h = modelCustomHour !== null ? modelCustomHour : new Date().getHours();
+    timeInput.value = String(h).padStart(2,'0') + ':00';
+    timeInput.oninput = (e) => {
+      const parts = e.target.value.split(':');
+      if (parts[0] !== undefined) {
+        modelCustomHour = parseInt(parts[0]);
+        render();
+      }
+    };
+    ctrl.appendChild(timeInput);
+  }
 
   const div1 = document.createElement('span'); div1.className = 'season-divider'; ctrl.appendChild(div1);
 
@@ -1573,10 +1605,14 @@ function formatMonths(months) {
   return groups.map(([s,e]) => s === e ? s+'月' : s+'〜'+e+'月').join('・');
 }
 
+// カスタム時刻 or 現在時刻
+function getModelHour() {
+  return modelCustomHour !== null ? modelCustomHour : new Date().getHours();
+}
 // 今の時間に出現するか（時間文字列をパース）
 function isActiveNow(timeStr) {
   if (!timeStr || timeStr === '終日') return true;
-  const h = new Date().getHours();
+  const h = getModelHour();
   return timeStr.split('・').some(part => {
     const m = part.match(/(\d+)[時]?[〜~](\d+)時/);
     if (!m) return false;
