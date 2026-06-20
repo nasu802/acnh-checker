@@ -1257,7 +1257,8 @@ function updateUserBadge() {
 async function syncToCloud() {
   if (!currentUser) return;
   // 全モードが空の場合はアップしない（空データによる上書き防止）
-  const totalOwned = ['kagu','recipe','music','art','fuku','hhp','fossil'].reduce((s, m) => s + Object.keys(state[m].owned).length, 0);
+  const totalOwned = ['kagu','recipe','music','art','fuku','hhp','fossil'].reduce((s, m) => s + Object.keys(state[m].owned).length, 0)
+    + Object.keys(modelState.done).length;
   if (totalOwned === 0) return;
   document.getElementById('syncIndicator').textContent = '↑';
   try {
@@ -1266,6 +1267,7 @@ async function syncToCloud() {
       owned: state[m].owned,
       updated_at: new Date().toISOString()
     }));
+    rows.push({ username: currentUser, mode: 'model', owned: { done: modelState.done, counts: modelState.counts }, updated_at: new Date().toISOString() });
     const res = await fetch(SUPABASE_URL + '/rest/v1/progress', {
       method: 'POST', headers: DB_HEADERS, body: JSON.stringify(rows)
     });
@@ -1293,7 +1295,13 @@ async function loadFromCloud(showResult=false) {
     let loaded = 0;
     if (data && data.length) {
       for (const row of data) {
-        if (state[row.mode]) {
+        if (row.mode === 'model') {
+          const cloudModel = row.owned || {};
+          modelState.done   = cloudModel.done   || {};
+          modelState.counts = cloudModel.counts || {};
+          loaded += Object.keys(modelState.done).length;
+          localStorage.setItem(MODEL_KEY, JSON.stringify(modelState));
+        } else if (state[row.mode]) {
           const cloudOwned = row.owned || {};
           loaded += Object.keys(cloudOwned).length;
           state[row.mode].owned = { ...state[row.mode].owned, ...cloudOwned };
@@ -1327,6 +1335,7 @@ function changeUser() {
   if (name && name.trim()) {
     currentUser = name.trim();
     localStorage.setItem('acnh_username', currentUser);
+    modelState = { counts: {}, done: {} };
     updateUserBadge();
     load();
     loadFromCloud().then(() => render());
@@ -1346,6 +1355,7 @@ function loadModel() {
 }
 function saveModel() {
   localStorage.setItem(MODEL_KEY, JSON.stringify(modelState));
+  scheduleSyncToCloud();
 }
 function modelBump(ja) {
   if (isViewing) return;
@@ -1374,12 +1384,12 @@ function modelToggleDone(ja, e) {
   renderModel();
 }
 
-function renderModelTabs(kaguOwned) {
+function renderModelTabs(kaguOwned, viewModelState) {
   const cats = Object.keys(DATA.model);
   const c = document.getElementById('catTabs');
   c.innerHTML = '';
   for (const cat of cats) {
-    const remain = DATA.model[cat].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !(kaguOwned[e]) : !modelState.done[i.ja]; }).length;
+    const remain = DATA.model[cat].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !(kaguOwned[e]) : !viewModelState.done[i.ja]; }).length;
     const btn = document.createElement('button');
     btn.className = 'cat-tab' + (currentCat.model === cat ? ' active' : '');
     btn.innerHTML = cat + '<span class="badge">' + remain + '</span>';
@@ -1393,11 +1403,14 @@ function renderModel() {
   const kaguOwned = (isViewing && otherUsersData[viewingUser])
     ? (otherUsersData[viewingUser]['kagu'] || {})
     : state.kagu.owned;
-  renderModelTabs(kaguOwned);
+  const viewModelState = (isViewing && otherUsersData[viewingUser]?.['model'])
+    ? otherUsersData[viewingUser]['model']
+    : modelState;
+  renderModelTabs(kaguOwned, viewModelState);
 
   const allCats = Object.keys(DATA.model);
   const totalAll = allCats.reduce((s, c) => s + DATA.model[c].length, 0);
-  const doneAll  = allCats.reduce((s, c) => s + DATA.model[c].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(kaguOwned[e]) : !!(modelState.done[i.ja]); }).length, 0);
+  const doneAll  = allCats.reduce((s, c) => s + DATA.model[c].filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(kaguOwned[e]) : !!(viewModelState.done[i.ja]); }).length, 0);
   const pct = totalAll ? Math.round(doneAll / totalAll * 100) : 0;
   document.getElementById('headerStats').innerHTML =
     '<span style="font-size:10px;opacity:.75">残り' + (totalAll - doneAll) + '</span>&nbsp;<b style="font-size:17px">' + pct + '%</b>';
@@ -1488,7 +1501,7 @@ function renderModel() {
   if (modelSeason !== 'all') filtered = filtered.filter(i => itemInMonth(i, modelSeason));
 
   const catTotal = items.length;
-  const catDone  = items.filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(kaguOwned[e]) : !!(modelState.done[i.ja]); }).length;
+  const catDone  = items.filter(i => { const e=MODEL_KAGU_MAP[i.ja]; return e ? !!(kaguOwned[e]) : !!(viewModelState.done[i.ja]); }).length;
   const catPct   = catTotal ? Math.round(catDone / catTotal * 100) : 0;
 
   const sec = document.createElement('div');
@@ -1510,9 +1523,9 @@ function renderModel() {
   grid.className = 'model-grid';
 
   for (const item of filtered) {
-    const count = modelState.counts[item.ja] || 0;
+    const count = viewModelState.counts[item.ja] || 0;
     const _kaguEn = MODEL_KAGU_MAP[item.ja];
-    const done  = _kaguEn ? !!(kaguOwned[_kaguEn]) : !!(modelState.done[item.ja]);
+    const done  = _kaguEn ? !!(kaguOwned[_kaguEn]) : !!(viewModelState.done[item.ja]);
     let chipCls = 'model-chip';
     if (done)           chipCls += ' model-done-chip';
     else if (count===3) chipCls += ' model-c3';
