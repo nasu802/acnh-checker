@@ -88,6 +88,16 @@ header h1 { font-size: 15px; font-weight: 800; letter-spacing: 0.02em; flex-shri
 .user-switch-btn.active {
   background: rgba(255,255,255,0.92); color: var(--mode-color, #2d5020); border-color: transparent;
 }
+.user-switch-btn.is-me {
+  border-color: rgba(255,255,255,0.7);
+}
+.user-switch-btn.is-me .me-label {
+  font-size: 9px; background: rgba(255,255,255,0.3); color: white;
+  padding: 1px 4px; border-radius: 5px; margin-left: 4px; font-weight: 700; vertical-align: middle;
+}
+.user-switch-btn.is-me.active .me-label {
+  background: var(--mode-color, #2d5020); color: white; opacity: 0.75;
+}
 .viewing-badge {
   font-size: 11px; background: #ff9800; color: white;
   padding: 2px 8px; border-radius: 8px; font-weight: 800; margin-left: 6px;
@@ -2557,7 +2567,9 @@ function renderUserSwitcher(allNames) {
   const names = [currentUser, ...allNames.filter(n => n && n !== currentUser).sort()];
   el.innerHTML = names.map(name => {
     const isActive = (viewingUser === name) || (!viewingUser && name === currentUser);
-    return `<button class="user-switch-btn${isActive ? ' active' : ''}" onclick="switchViewUser('${name}')">${name}</button>`;
+    const isMe = name === currentUser;
+    const meTag = isMe ? '<span class="me-label">自分</span>' : '';
+    return `<button class="user-switch-btn${isActive ? ' active' : ''}${isMe ? ' is-me' : ''}" onclick="switchViewUser('${name}')">${name}${meTag}</button>`;
   }).join('');
 }
 function switchViewUser(name) {
