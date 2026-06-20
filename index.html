@@ -1918,7 +1918,7 @@ function switchMode(m) {
   search = '';
   document.getElementById('searchInput').value = '';
   searchClear.style.display = 'none';
-  document.body.className = 'mode-' + m;
+  document.body.className = 'mode-' + m + (document.body.classList.contains('viewing-other') ? ' viewing-other' : '');
   document.getElementById('tabKagu').className   = 'mode-tab' + (m === 'kagu'   ? ' active' : '');
   document.getElementById('tabRecipe').className = 'mode-tab' + (m === 'recipe' ? ' active' : '');
   document.getElementById('tabMusic').className   = 'mode-tab' + (m === 'music'   ? ' active' : '');
