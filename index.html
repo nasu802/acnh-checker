@@ -1435,8 +1435,8 @@ function renderModel() {
   const kaguOwned = (isViewing && otherUsersData[viewingUser])
     ? (otherUsersData[viewingUser]['kagu'] || {})
     : state.kagu.owned;
-  const viewModelState = (isViewing && otherUsersData[viewingUser]?.['model'])
-    ? otherUsersData[viewingUser]['model']
+  const viewModelState = isViewing
+    ? (otherUsersData[viewingUser]?.['model'] || { done: {}, counts: {} })
     : modelState;
   renderModelTabs(kaguOwned, viewModelState);
 
