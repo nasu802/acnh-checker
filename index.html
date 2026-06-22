@@ -1042,7 +1042,7 @@ body.viewing-other #viewingBanner { display: flex; }
 </div>
 <div id="changelogOverlay" class="settings-overlay" style="display:none" onclick="if(event.target===this)closeChangelog()">
   <div class="changelog-box">
-    <h2>📋 アップデート内容</h2>
+    <h2>アップデート内容</h2>
     <div class="changelog-scroll" id="changelogScroll"></div>
     <button class="settings-close" style="margin-top:14px" onclick="closeChangelog()">閉じる</button>
   </div>
@@ -1666,21 +1666,57 @@ const CHANGELOG = [
     items: [
       '最近タブにアップデート内容ボタンを追加',
       '家具モードに「家具まとめ」タブを追加（家具・小物・壁掛け・天井をまとめて表示）',
-    ]
-  },
-  {
-    date: '2026-06-22',
-    items: [
       '「全て」表示で所持・未所持をあいうえお順に混在表示するよう変更',
-      '他ユーザー閲覧中にタブを切り替えても紫テーマが維持されるよう修正',
-      '他ユーザー閲覧時にカテゴリタブも紫になるよう修正',
     ]
   },
   {
-    date: '2026-06-21',
+    date: '2026-06-20',
     items: [
-      '他ユーザーのデータを閲覧すると画面全体が紫になる機能を追加',
+      '他ユーザー閲覧時に画面全体が紫になる機能を追加',
+      'ユーザー切り替えボタンに「自分」ラベルを表示',
+      '他ユーザー閲覧時にカテゴリタブも紫になるよう修正',
+      '他ユーザー閲覧中にタブを切り替えても紫テーマが維持されるよう修正',
+      '模型チェッカーの進捗がユーザー間で混在するバグを修正',
       '他ユーザーの模型データがない場合に自分のデータが表示されるバグを修正',
+    ]
+  },
+  {
+    date: '2026-06-11',
+    items: [
+      '模型モード追加（むし・さかな各80種、計160種）',
+      '模型タブ←→家具タブ 双方向同期',
+      '模型タブに詳細表示・月別フィルター・半球切替設定を追加',
+      '模型タブに時間ハイライト機能・カスタム時刻入力を追加',
+      'むし・さかなの出現月・時間・場所データを全面修正',
+      'あ順・新着順を収集済みアイテムにも正しく適用されるよう修正',
+      '入手フィルター（ポキ/マイル/レシピ）を家具タブのみに表示',
+      'UI整理・設定（半球など）をlocalStorageに永続化',
+    ]
+  },
+  {
+    date: '2026-06-07',
+    items: [
+      'リスト/チップ表示モード切り替えを追加',
+      '新着順ソートを追加',
+      '部分一致検索をデフォルトに変更',
+      'HHP・服データ復元、HHPクロス同期修正',
+      'モバイルレイアウト・ヘッダーデザイン改善',
+      'クラウド同期ローディング・トースト通知を追加',
+      '最近ページに更新ボタン追加・グラデーション表示',
+      '入手フィルター（ポキ/マイル/レシピ）と4000種タグ付けを追加',
+    ]
+  },
+  {
+    date: '2026-06-06',
+    items: [
+      'あつ森チェッカー 初回リリース',
+      'Supabaseクラウド同期・パスワード認証・ユーザー管理機能',
+      'みんなパネル（進捗比較）を追加',
+      '最近タブ・NEWハイライト・グラデーション表示を追加',
+      'バックアップ・エクスポート/インポート機能を追加',
+      '服データ追加（6532アイテム）',
+      'HHPモードを追加',
+      '五十音順ソート・かな検索改善',
     ]
   },
 ];
@@ -2791,7 +2827,7 @@ function renderRecent() {
   refreshWrap.appendChild(refreshBtn);
   const changelogBtn = document.createElement('button');
   changelogBtn.className = 'recent-refresh-btn';
-  changelogBtn.innerHTML = '📋 アップデート内容';
+  changelogBtn.innerHTML = 'アップデート内容';
   changelogBtn.onclick = openChangelog;
   refreshWrap.appendChild(changelogBtn);
   main.appendChild(refreshWrap);
