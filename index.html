@@ -2226,71 +2226,33 @@ function appendTodoDone(sec, todoItems, doneItems, cat, q, owned) {
   if (searchScope === 'all') {
     if (!todoItems.length && !doneItems.length) return;
     const sortFn = sortOrder === 'new' ? (a,b) => sortByNew(a,b,owned) : sortByKana;
-    const sortedTodo = [...todoItems].sort(sortFn);
-    const sortedDone = [...doneItems].sort(sortFn);
-
-    function makeAllDivider(label) {
-      const d = document.createElement('div');
-      d.className = 'all-scope-divider';
-      d.textContent = label;
-      return d;
-    }
+    const allItems = [...todoItems, ...doneItems].sort(sortFn);
 
     if (displayMode === 'list') {
-      if (sortedTodo.length) {
-        const list = document.createElement('div');
-        list.className = 'items-list';
-        for (const item of sortedTodo) {
-          const row = document.createElement('div');
-          row.className = 'list-row';
-          row.innerHTML = '<span class="list-check"></span><span class="list-name">' + item.ja + '</span><span class="list-src">' + getSrcEmoji(item.s) + '</span>';
-          if (!isViewing) row.onclick = () => check(item.en, row);
-          list.appendChild(row);
-        }
-        sec.appendChild(list);
+      const list = document.createElement('div');
+      list.className = 'items-list';
+      for (const item of allItems) {
+        const isDone = !!owned[item.en];
+        const row = document.createElement('div');
+        row.className = 'list-row' + (isDone ? ' list-checked' : '');
+        row.innerHTML = '<span class="list-check">' + (isDone ? '✓' : '') + '</span><span class="list-name">' + item.ja + '</span><span class="list-src">' + getSrcEmoji(item.s) + '</span>';
+        if (!isViewing) row.onclick = isDone ? () => uncheck(item.en) : () => check(item.en, row);
+        list.appendChild(row);
       }
-      if (sortedDone.length) {
-        const doneLabel = mode === 'kagu' ? '✅ 収集済み' : mode === 'recipe' ? '✅ 習得済み' : mode === 'art' ? '✅ 寄贈済み' : '✅ 入手済み';
-        sec.appendChild(makeAllDivider(doneLabel + '  ' + sortedDone.length + '個'));
-        const doneList = document.createElement('div');
-        doneList.className = 'items-list';
-        for (const item of sortedDone) {
-          const row = document.createElement('div');
-          row.className = 'list-row list-checked';
-          row.innerHTML = '<span class="list-check">✓</span><span class="list-name">' + item.ja + '</span><span class="list-src">' + getSrcEmoji(item.s) + '</span>';
-          if (!isViewing) row.onclick = () => uncheck(item.en);
-          doneList.appendChild(row);
-        }
-        sec.appendChild(doneList);
-      }
+      sec.appendChild(list);
     } else {
-      if (sortedTodo.length) {
-        const grid = document.createElement('div');
-        grid.className = 'items-grid';
-        for (const item of sortedTodo) {
-          const chip = document.createElement('span');
-          chip.className = 'chip chip-todo';
-          chip.textContent = item.ja;
-          if (!isViewing) chip.onclick = () => check(item.en, chip);
-          grid.appendChild(chip);
-        }
-        sec.appendChild(grid);
+      const grid = document.createElement('div');
+      grid.className = 'items-grid';
+      for (const item of allItems) {
+        const isDone = !!owned[item.en];
+        const chip = document.createElement('span');
+        chip.className = 'chip ' + (isDone ? 'chip-all-done' : 'chip-todo');
+        chip.textContent = item.ja;
+        if (isDone) chip.dataset.en = item.en;
+        if (!isViewing) chip.onclick = isDone ? () => uncheck(item.en) : () => check(item.en, chip);
+        grid.appendChild(chip);
       }
-      if (sortedDone.length) {
-        const doneLabel = mode === 'kagu' ? '✅ 収集済み' : mode === 'recipe' ? '✅ 習得済み' : mode === 'art' ? '✅ 寄贈済み' : '✅ 入手済み';
-        sec.appendChild(makeAllDivider(doneLabel + '  ' + sortedDone.length + '個'));
-        const doneGrid = document.createElement('div');
-        doneGrid.className = 'items-grid';
-        for (const item of sortedDone) {
-          const chip = document.createElement('span');
-          chip.className = 'chip chip-all-done';
-          chip.textContent = item.ja;
-          chip.dataset.en = item.en;
-          if (!isViewing) chip.onclick = () => uncheck(item.en);
-          doneGrid.appendChild(chip);
-        }
-        sec.appendChild(doneGrid);
-      }
+      sec.appendChild(grid);
     }
     return;
   }
