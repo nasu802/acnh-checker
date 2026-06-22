@@ -780,10 +780,27 @@ body.mode-model { background: #eef5e0; }
   cursor: pointer; font-family: inherit; margin-top: 4px;
 }
 
+/* アップデート内容モーダル */
+.changelog-box {
+  background: white; border-radius: 20px; padding: 20px 18px;
+  max-width: 340px; width: 92%; max-height: 80vh;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column;
+}
+.changelog-box h2 { font-size: 16px; font-weight: 800; margin-bottom: 14px; }
+.changelog-scroll { overflow-y: auto; flex: 1; }
+.changelog-entry { margin-bottom: 16px; }
+.changelog-date { font-size: 11px; font-weight: 800; color: #888; margin-bottom: 4px; }
+.changelog-items { list-style: none; padding: 0; margin: 0; }
+.changelog-items li { font-size: 13px; padding: 4px 0 4px 14px; position: relative; line-height: 1.5; }
+.changelog-items li::before { content: '・'; position: absolute; left: 0; color: #5a9e38; font-weight: 800; }
+
 /* 最近ページ 更新ボタン */
 .recent-refresh-wrap {
   display: flex;
   justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
   padding: 12px 16px 4px;
 }
 .recent-refresh-btn {
@@ -1021,6 +1038,13 @@ body.viewing-other #viewingBanner { display: flex; }
       </div>
     </div>
     <button class="settings-close" onclick="closeSettings()">閉じる</button>
+  </div>
+</div>
+<div id="changelogOverlay" class="settings-overlay" style="display:none" onclick="if(event.target===this)closeChangelog()">
+  <div class="changelog-box">
+    <h2>📋 アップデート内容</h2>
+    <div class="changelog-scroll" id="changelogScroll"></div>
+    <button class="settings-close" style="margin-top:14px" onclick="closeChangelog()">閉じる</button>
   </div>
 </div>
 <div id="supabaseSetup" class="supabase-setup">
@@ -1634,6 +1658,57 @@ function openSettings() {
 }
 function closeSettings() {
   document.getElementById('settingsOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+const CHANGELOG = [
+  {
+    date: '2026-06-23',
+    items: [
+      '最近タブにアップデート内容ボタンを追加',
+      '家具モードに「家具まとめ」タブを追加（家具・小物・壁掛け・天井をまとめて表示）',
+    ]
+  },
+  {
+    date: '2026-06-22',
+    items: [
+      '「全て」表示で所持・未所持をあいうえお順に混在表示するよう変更',
+      '他ユーザー閲覧中にタブを切り替えても紫テーマが維持されるよう修正',
+      '他ユーザー閲覧時にカテゴリタブも紫になるよう修正',
+    ]
+  },
+  {
+    date: '2026-06-21',
+    items: [
+      '他ユーザーのデータを閲覧すると画面全体が紫になる機能を追加',
+      '他ユーザーの模型データがない場合に自分のデータが表示されるバグを修正',
+    ]
+  },
+];
+function openChangelog() {
+  const scroll = document.getElementById('changelogScroll');
+  scroll.innerHTML = '';
+  for (const entry of CHANGELOG) {
+    const block = document.createElement('div');
+    block.className = 'changelog-entry';
+    const dateEl = document.createElement('div');
+    dateEl.className = 'changelog-date';
+    dateEl.textContent = entry.date;
+    const ul = document.createElement('ul');
+    ul.className = 'changelog-items';
+    for (const text of entry.items) {
+      const li = document.createElement('li');
+      li.textContent = text;
+      ul.appendChild(li);
+    }
+    block.appendChild(dateEl);
+    block.appendChild(ul);
+    scroll.appendChild(block);
+  }
+  document.getElementById('changelogOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeChangelog() {
+  document.getElementById('changelogOverlay').style.display = 'none';
   document.body.style.overflow = '';
 }
 function setHemisphere(h) {
@@ -2705,7 +2780,7 @@ function renderRecent() {
     return day + '日前';
   }
 
-  // 更新ボタン
+  // 更新ボタン & アップデート内容ボタン
   const refreshWrap = document.createElement('div');
   refreshWrap.className = 'recent-refresh-wrap';
   const refreshBtn = document.createElement('button');
@@ -2714,6 +2789,11 @@ function renderRecent() {
   refreshBtn.innerHTML = '<span class="refresh-icon">↻</span><span class="refresh-label-text">最新を読み込む</span>';
   refreshBtn.onclick = recentRefresh;
   refreshWrap.appendChild(refreshBtn);
+  const changelogBtn = document.createElement('button');
+  changelogBtn.className = 'recent-refresh-btn';
+  changelogBtn.innerHTML = '📋 アップデート内容';
+  changelogBtn.onclick = openChangelog;
+  refreshWrap.appendChild(changelogBtn);
   main.appendChild(refreshWrap);
 
   const sec = document.createElement('div');
