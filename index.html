@@ -2127,10 +2127,17 @@ function renderTabs() {
   const owned = state[mode].owned;
   const c = document.getElementById('catTabs');
   c.innerHTML = '';
-  for (const cat of ['すべて', ...cats]) {
-    const remain = cat === 'すべて'
-      ? cats.reduce((s, k) => s + items[k].filter(i => !owned[i.en]).length, 0)
-      : items[cat].filter(i => !owned[i.en]).length;
+  const kaguMixCats = ['家具', '小物', '壁掛け', '天井'];
+  const specialTabs = mode === 'kagu' ? ['すべて', '家具まとめ', ...cats] : ['すべて', ...cats];
+  for (const cat of specialTabs) {
+    let remain;
+    if (cat === 'すべて') {
+      remain = cats.reduce((s, k) => s + items[k].filter(i => !owned[i.en]).length, 0);
+    } else if (cat === '家具まとめ') {
+      remain = kaguMixCats.reduce((s, k) => s + (items[k] || []).filter(i => !owned[i.en]).length, 0);
+    } else {
+      remain = items[cat].filter(i => !owned[i.en]).length;
+    }
     const btn = document.createElement('button');
     btn.className = 'cat-tab' + (currentCat[mode] === cat ? ' active' : '');
     btn.innerHTML = cat + '<span class="badge">' + remain + '</span>';
@@ -2164,9 +2171,11 @@ function render() {
 
 
 
-  if (currentCat[mode] === 'すべて') {
-    // 全カテゴリを混ぜてあいうえお順に1つのリストで表示
-    let allItems = cats.flatMap(cat => items[cat].map(i => ({...i, cat})));
+  if (currentCat[mode] === 'すべて' || (mode === 'kagu' && currentCat[mode] === '家具まとめ')) {
+    const mixCats = (mode === 'kagu' && currentCat[mode] === '家具まとめ')
+      ? ['家具', '小物', '壁掛け', '天井']
+      : cats;
+    let allItems = mixCats.flatMap(cat => (items[cat] || []).map(i => ({...i, cat})));
     if (q) allItems = allItems.filter(i => matchSearch(i.ja, i.en, q) || i.cat.includes(q));
     allItems = applySrcFilter(allItems);
     const todoItems = allItems.filter(i => !owned[i.en]).sort((a,b) => sortOrder === 'new' ? sortByNew(a,b,owned) : sortByKana(a,b));
@@ -2174,7 +2183,7 @@ function render() {
 
     const sec = document.createElement('div');
     sec.className = 'section-block';
-    appendTodoDone(sec, todoItems, doneItems, 'すべて', q, owned);
+    appendTodoDone(sec, todoItems, doneItems, currentCat[mode], q, owned);
     main.appendChild(sec);
     return;
   }
