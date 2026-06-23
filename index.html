@@ -2808,36 +2808,24 @@ function toggleModelInAll(ja) {
 function renderAll() {
   const main = document.getElementById('main');
   main.innerHTML = '';
-  document.getElementById('headerStats').textContent = '';
-  const q = search.toLowerCase().trim();
-  if (!q) {
-    const hint = document.createElement('div');
-    hint.className = 'all-mode-hint';
-    hint.textContent = '上の検索ボックスにアイテム名を入力してください\n家具・レシピ・服・化石・模型など全部まとめて検索できます';
-    main.appendChild(hint);
-    return;
-  }
   isViewing = !!(viewingUser && viewingUser !== currentUser);
-  // 懸念5: 他ユーザー閲覧時の模型データを正しく参照
   const viewKaguOwned = isViewing ? (otherUsersData[viewingUser]?.kagu || {}) : state.kagu.owned;
   const viewModelDone = isViewing ? (otherUsersData[viewingUser]?.model?.done || {}) : modelState.done;
-  // 懸念2: 重複排除（同じenが複数モードに存在する場合、最初のモードのみ表示）
+  const q = search.toLowerCase().trim();
   const seenEn = new Set();
-  let totalFound = 0;
+  let totalOwned = 0, totalAll = 0;
   for (const def of ALL_MODE_DEFS) {
     const m = def.key;
     const isModel = m === 'model';
     const owned = isModel ? null : (isViewing ? (otherUsersData[viewingUser]?.[m] || {}) : state[m].owned);
     const hits = [];
-    for (const [cat, catItems] of Object.entries(DATA[m])) {
+    for (const catItems of Object.values(DATA[m])) {
       for (const item of catItems) {
-        if (!matchSearch(item.ja, item.en || item.ja, q)) continue;
-        // 懸念2: 非モデルアイテムで既出のenはスキップ
         if (!isModel && item.en) {
           if (seenEn.has(item.en)) continue;
           seenEn.add(item.en);
         }
-        // 懸念1&5: 模型の完了判定（MODEL_KAGU_MAP経由 or modelState.done）
+        if (q && !matchSearch(item.ja, item.en || item.ja, q)) continue;
         let isDone;
         if (isModel) {
           const kaguEn = MODEL_KAGU_MAP[item.ja];
@@ -2845,19 +2833,26 @@ function renderAll() {
         } else {
           isDone = !!owned[item.en];
         }
-        hits.push({ ...item, cat, isDone });
+        hits.push({ ...item, isDone });
       }
     }
     if (!hits.length) continue;
-    totalFound += hits.length;
     hits.sort(sortByKana);
+    const modeOwned = hits.filter(i => i.isDone).length;
+    totalOwned += modeOwned;
+    totalAll += hits.length;
     const sec = document.createElement('div');
     sec.className = 'section-block';
     const lbl = document.createElement('div');
     lbl.className = 'section-label';
     lbl.innerHTML = '<span class="all-mode-label" style="background:' + def.color + '">' + def.label + '</span>'
-      + hits.filter(i => i.isDone).length + ' / ' + hits.length + ' 個';
+      + modeOwned + ' / ' + hits.length + ' 個';
     sec.appendChild(lbl);
+    const pct = hits.length ? Math.round(modeOwned / hits.length * 100) : 0;
+    const bar = document.createElement('div');
+    bar.className = 'progress-wrap';
+    bar.innerHTML = '<div class="progress-fill" style="width:' + pct + '%"></div>';
+    sec.appendChild(bar);
     const grid = document.createElement('div');
     grid.className = 'items-grid';
     for (const item of hits) {
@@ -2866,7 +2861,6 @@ function renderAll() {
       chip.textContent = item.ja;
       if (!isViewing) {
         if (isModel) {
-          // 懸念1: 模型もタップでチェック可能に
           const ja = item.ja;
           chip.onclick = () => toggleModelInAll(ja);
         } else {
@@ -2879,7 +2873,10 @@ function renderAll() {
     sec.appendChild(grid);
     main.appendChild(sec);
   }
-  if (!totalFound) {
+  const pctAll = totalAll ? Math.round(totalOwned / totalAll * 100) : 0;
+  document.getElementById('headerStats').innerHTML =
+    '<span style="font-size:10px;opacity:.75">残り' + (totalAll - totalOwned) + '</span>&nbsp;<b style="font-size:17px">' + pctAll + '%</b>';
+  if (!main.children.length) {
     const em = document.createElement('div');
     em.className = 'all-mode-hint';
     em.textContent = '見つかりませんでした';
