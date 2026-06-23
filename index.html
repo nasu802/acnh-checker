@@ -2061,7 +2061,7 @@ function switchMode(m) {
   const controls = document.getElementById('mainControls');
   if (controls) controls.style.display = m === 'recent' ? 'none' : '';
   const ctrlRow = document.getElementById('ctrlBtnsRow');
-  if (ctrlRow) ctrlRow.style.display = (m === 'recent' || m === 'model' || m === 'all') ? 'none' : '';
+  if (ctrlRow) ctrlRow.style.display = (m === 'recent' || m === 'model') ? 'none' : '';
   const nav = document.getElementById('kanaNav');
   if (nav) nav.style.display = (m === 'recent' || m === 'model' || m === 'all') ? 'none' : '';
   srcFilter = new Set();
@@ -2814,11 +2814,14 @@ function renderAll() {
   const q = search.toLowerCase().trim();
   const seenEn = new Set();
   let totalOwned = 0, totalAll = 0;
+  const sortFn = sortOrder === 'new'
+    ? (a, b) => { const oa = a._ts || 0, ob = b._ts || 0; return ob - oa || sortByKana(a, b); }
+    : sortByKana;
   for (const def of ALL_MODE_DEFS) {
     const m = def.key;
     const isModel = m === 'model';
     const owned = isModel ? null : (isViewing ? (otherUsersData[viewingUser]?.[m] || {}) : state[m].owned);
-    const hits = [];
+    const allHits = [];
     for (const catItems of Object.values(DATA[m])) {
       for (const item of catItems) {
         if (!isModel && item.en) {
@@ -2826,51 +2829,71 @@ function renderAll() {
           seenEn.add(item.en);
         }
         if (q && !matchSearch(item.ja, item.en || item.ja, q)) continue;
-        let isDone;
+        let isDone, ts;
         if (isModel) {
           const kaguEn = MODEL_KAGU_MAP[item.ja];
           isDone = kaguEn ? !!viewKaguOwned[kaguEn] : !!viewModelDone[item.ja];
+          ts = isDone ? 1 : 0;
         } else {
-          isDone = !!owned[item.en];
+          ts = owned[item.en] || 0;
+          isDone = !!ts;
         }
-        hits.push({ ...item, isDone });
+        allHits.push({ ...item, isDone, _ts: ts });
       }
     }
+    if (!allHits.length) continue;
+    // searchScope フィルター
+    const hits = searchScope === 'todo' ? allHits.filter(i => !i.isDone)
+               : searchScope === 'done' ? allHits.filter(i =>  i.isDone)
+               : allHits;
     if (!hits.length) continue;
-    hits.sort(sortByKana);
-    const modeOwned = hits.filter(i => i.isDone).length;
+    hits.sort(sortFn);
+    const modeOwned = allHits.filter(i => i.isDone).length;
     totalOwned += modeOwned;
-    totalAll += hits.length;
+    totalAll += allHits.length;
     const sec = document.createElement('div');
     sec.className = 'section-block';
     const lbl = document.createElement('div');
     lbl.className = 'section-label';
     lbl.innerHTML = '<span class="all-mode-label" style="background:' + def.color + '">' + def.label + '</span>'
-      + modeOwned + ' / ' + hits.length + ' 個';
+      + modeOwned + ' / ' + allHits.length + ' 個';
     sec.appendChild(lbl);
-    const pct = hits.length ? Math.round(modeOwned / hits.length * 100) : 0;
+    const pct = allHits.length ? Math.round(modeOwned / allHits.length * 100) : 0;
     const bar = document.createElement('div');
     bar.className = 'progress-wrap';
     bar.innerHTML = '<div class="progress-fill" style="width:' + pct + '%"></div>';
     sec.appendChild(bar);
-    const grid = document.createElement('div');
-    grid.className = 'items-grid';
-    for (const item of hits) {
-      const chip = document.createElement('span');
-      chip.className = 'chip ' + (item.isDone ? 'chip-all-done' : 'chip-todo');
-      chip.textContent = item.ja;
-      if (!isViewing) {
-        if (isModel) {
-          const ja = item.ja;
-          chip.onclick = () => toggleModelInAll(ja);
-        } else {
-          const en = item.en;
-          chip.onclick = item.isDone ? () => uncheckFromMode(en, m) : () => checkInMode(en, m);
+    if (displayMode === 'list') {
+      const list = document.createElement('div');
+      list.className = 'items-list';
+      for (const item of hits) {
+        const row = document.createElement('div');
+        row.className = 'list-row' + (item.isDone ? ' list-checked' : '');
+        row.innerHTML = '<span class="list-check">' + (item.isDone ? '✓' : '') + '</span>'
+          + '<span class="list-name">' + item.ja + '</span>'
+          + '<span class="list-src">' + getSrcEmoji(item.s) + '</span>';
+        if (!isViewing) {
+          if (isModel) { const ja = item.ja; row.onclick = () => toggleModelInAll(ja); }
+          else { const en = item.en; row.onclick = item.isDone ? () => uncheckFromMode(en, m) : () => checkInMode(en, m); }
         }
+        list.appendChild(row);
       }
-      grid.appendChild(chip);
+      sec.appendChild(list);
+    } else {
+      const grid = document.createElement('div');
+      grid.className = 'items-grid';
+      for (const item of hits) {
+        const chip = document.createElement('span');
+        chip.className = 'chip ' + (item.isDone ? 'chip-all-done' : 'chip-todo');
+        chip.textContent = item.ja;
+        if (!isViewing) {
+          if (isModel) { const ja = item.ja; chip.onclick = () => toggleModelInAll(ja); }
+          else { const en = item.en; chip.onclick = item.isDone ? () => uncheckFromMode(en, m) : () => checkInMode(en, m); }
+        }
+        grid.appendChild(chip);
+      }
+      sec.appendChild(grid);
     }
-    sec.appendChild(grid);
     main.appendChild(sec);
   }
   const pctAll = totalAll ? Math.round(totalOwned / totalAll * 100) : 0;
