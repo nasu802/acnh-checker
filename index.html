@@ -2790,6 +2790,21 @@ function checkInMode(en, m) {
   const prev = mode; mode = m; syncCheck(en, ts); mode = prev;
   save(); render();
 }
+function toggleModelInAll(ja) {
+  if (isViewing) return;
+  const kaguEn = MODEL_KAGU_MAP[ja];
+  if (kaguEn) {
+    if (state.kagu.owned[kaguEn]) delete state.kagu.owned[kaguEn];
+    else { state.kagu.owned[kaguEn] = Date.now(); showToast('★ ' + ja + ' 模型完成！', 'success'); }
+    localStorage.setItem(KEYS.kagu, JSON.stringify(state.kagu));
+    scheduleSyncToCloud();
+  } else {
+    modelState.done[ja] = !modelState.done[ja];
+    if (modelState.done[ja]) showToast('★ ' + ja + ' 模型完成！', 'success');
+    saveModel();
+  }
+  render();
+}
 function renderAll() {
   const main = document.getElementById('main');
   main.innerHTML = '';
@@ -2803,6 +2818,11 @@ function renderAll() {
     return;
   }
   isViewing = !!(viewingUser && viewingUser !== currentUser);
+  // 懸念5: 他ユーザー閲覧時の模型データを正しく参照
+  const viewKaguOwned = isViewing ? (otherUsersData[viewingUser]?.kagu || {}) : state.kagu.owned;
+  const viewModelDone = isViewing ? (otherUsersData[viewingUser]?.model?.done || {}) : modelState.done;
+  // 懸念2: 重複排除（同じenが複数モードに存在する場合、最初のモードのみ表示）
+  const seenEn = new Set();
   let totalFound = 0;
   for (const def of ALL_MODE_DEFS) {
     const m = def.key;
@@ -2812,7 +2832,19 @@ function renderAll() {
     for (const [cat, catItems] of Object.entries(DATA[m])) {
       for (const item of catItems) {
         if (!matchSearch(item.ja, item.en || item.ja, q)) continue;
-        const isDone = isModel ? !!modelState.done[item.ja] : !!owned[item.en];
+        // 懸念2: 非モデルアイテムで既出のenはスキップ
+        if (!isModel && item.en) {
+          if (seenEn.has(item.en)) continue;
+          seenEn.add(item.en);
+        }
+        // 懸念1&5: 模型の完了判定（MODEL_KAGU_MAP経由 or modelState.done）
+        let isDone;
+        if (isModel) {
+          const kaguEn = MODEL_KAGU_MAP[item.ja];
+          isDone = kaguEn ? !!viewKaguOwned[kaguEn] : !!viewModelDone[item.ja];
+        } else {
+          isDone = !!owned[item.en];
+        }
         hits.push({ ...item, cat, isDone });
       }
     }
@@ -2832,13 +2864,14 @@ function renderAll() {
       const chip = document.createElement('span');
       chip.className = 'chip ' + (item.isDone ? 'chip-all-done' : 'chip-todo');
       chip.textContent = item.ja;
-      if (!isViewing && !isModel) {
-        if (item.isDone) {
-          const en = item.en;
-          chip.onclick = () => uncheckFromMode(en, m);
+      if (!isViewing) {
+        if (isModel) {
+          // 懸念1: 模型もタップでチェック可能に
+          const ja = item.ja;
+          chip.onclick = () => toggleModelInAll(ja);
         } else {
           const en = item.en;
-          chip.onclick = () => checkInMode(en, m);
+          chip.onclick = item.isDone ? () => uncheckFromMode(en, m) : () => checkInMode(en, m);
         }
       }
       grid.appendChild(chip);
