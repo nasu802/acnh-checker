@@ -2626,11 +2626,11 @@ function togglePartial() {
 function toHiraKey(s) {
   return [...s].map(c => { const cp = c.charCodeAt(0); return (cp>=0x30A1&&cp<=0x30F6)?String.fromCharCode(cp-0x60):c; }).join('');
 }
-// 五十音順（アルファベット始まりは末尾）
+// 五十音順 → 英語 → 数字
 function sortByKana(a, b) {
-  const aLatin = /^[A-Za-z0-9]/.test(a.ja);
-  const bLatin = /^[A-Za-z0-9]/.test(b.ja);
-  if (aLatin !== bLatin) return aLatin ? 1 : -1;
+  const rank = s => /^[0-9]/.test(s) ? 2 : /^[A-Za-z]/.test(s) ? 1 : 0;
+  const ra = rank(a.ja), rb = rank(b.ja);
+  if (ra !== rb) return ra - rb;
   return toHiraKey(a.ja).localeCompare(toHiraKey(b.ja), 'ja');
 }
 // 入手日順（新着が上）
