@@ -642,6 +642,62 @@ body.mode-model { background: #eef5e0; }
 .mode-model .progress-fill { background: linear-gradient(90deg, #5a9e38, #90cc60); }
 .mode-model .cat-icon { background: #5a9e38; }
 
+/* メモ帳: あつ森ペールイエロー */
+body.mode-memo { background: #fdf8e8; }
+.mode-memo header { background: #c8822a; }
+.mode-memo .mode-tabs { background: #b87022; border-bottom-color: #a06018; }
+.memo-area {
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.memo-card {
+  background: #fffef5;
+  border: 1.5px solid #e8d898;
+  border-radius: 12px;
+  box-shadow: 0 2px 0 #e8c850, 0 3px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+.memo-card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px 8px;
+  background: #fdf5d0;
+  border-bottom: 1px solid #e8d898;
+}
+.memo-card-title-input {
+  flex: 1; border: none; background: transparent;
+  font-size: 14px; font-weight: 700; color: #5a3c10;
+  outline: none;
+}
+.memo-card-title-input::placeholder { color: #c8a850; }
+.memo-card-del {
+  font-size: 16px; color: #c8a850; cursor: pointer; padding: 2px 4px;
+  background: none; border: none; line-height: 1;
+}
+.memo-card-del:hover { color: #a06010; }
+.memo-card-body {
+  padding: 0;
+}
+.memo-textarea {
+  width: 100%; min-height: 90px;
+  border: none; resize: vertical;
+  background: transparent;
+  padding: 10px 14px;
+  font-size: 14px; line-height: 1.7;
+  color: #4a3010; font-family: inherit;
+  outline: none;
+}
+.memo-textarea::placeholder { color: #d0b870; }
+.memo-add-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin: 4px auto 0;
+  padding: 9px 22px; border-radius: 20px;
+  border: 2px dashed #d0b860;
+  background: none; color: #a07820;
+  font-size: 14px; cursor: pointer; font-weight: 700;
+  transition: border-color 0.12s, color 0.12s;
+}
+.memo-add-btn:hover { border-color: #a07820; color: #7a5810; }
+
 /* 全部検索: ニュートラルグレー */
 body.mode-all { background: #f0f2f5; }
 body.mode-all header { background: #4a5568; }
@@ -1077,6 +1133,7 @@ body.viewing-other #viewingBanner { display: flex; }
   <button class="mode-tab" id="tabHhp" onclick="switchMode('hhp')">HHP</button>
   <button class="mode-tab" id="tabFossil" onclick="switchMode('fossil')">化石</button>
   <button class="mode-tab" id="tabModel" onclick="switchMode('model')">模型</button>
+  <button class="mode-tab" id="tabMemo" onclick="switchMode('memo')">メモ</button>
   <button class="mode-tab" id="tabRecent" onclick="switchMode('recent')">最近</button>
   <button class="mode-tab" id="tabAll" onclick="switchMode('all')">全部</button>
 </div>
@@ -1155,7 +1212,7 @@ const MODEL_KAGU_MAP = {};
   }
 })();
 
-const LABELS = { kagu: '家具チェッカー', recipe: 'レシピチェッカー', music: 'とたけけ曲チェッカー', art: '美術品チェッカー', fuku: '服チェッカー', hhp: 'HHPチェッカー', fossil: '化石チェッカー', model: '模型チェッカー', all: '全部検索' };
+const LABELS = { kagu: '家具チェッカー', recipe: 'レシピチェッカー', music: 'とたけけ曲チェッカー', art: '美術品チェッカー', fuku: '服チェッカー', hhp: 'HHPチェッカー', fossil: '化石チェッカー', model: '模型チェッカー', memo: 'メモ帳', all: '全部検索' };
 const KEYS   = { kagu: 'acnh_kagu_v2', recipe: 'acnh_recipe_v2', music: 'acnh_music_v1', art: 'acnh_art_v1', fuku: 'acnh_fuku_v1', hhp: 'acnh_hhp_v1', fossil: 'acnh_fossil_v1' };
 
 // Supabase config — paste your project URL and anon key here
@@ -2056,23 +2113,24 @@ function switchMode(m) {
   document.getElementById('tabHhp').className     = 'mode-tab' + (m === 'hhp'     ? ' active' : '');
   document.getElementById('tabFossil').className  = 'mode-tab' + (m === 'fossil'  ? ' active' : '');
   document.getElementById('tabModel').className   = 'mode-tab' + (m === 'model'   ? ' active' : '');
+  document.getElementById('tabMemo').className    = 'mode-tab' + (m === 'memo'    ? ' active' : '');
   document.getElementById('tabRecent').className  = 'mode-tab' + (m === 'recent'  ? ' active' : '');
   document.getElementById('tabAll').className     = 'mode-tab' + (m === 'all'     ? ' active' : '');
   document.getElementById('headerTitle').textContent = m === 'recent' ? '最近入手' : LABELS[m];
   const controls = document.getElementById('mainControls');
-  if (controls) controls.style.display = m === 'recent' ? 'none' : '';
+  if (controls) controls.style.display = (m === 'recent' || m === 'memo') ? 'none' : '';
   const ctrlRow = document.getElementById('ctrlBtnsRow');
-  if (ctrlRow) ctrlRow.style.display = (m === 'recent' || m === 'model') ? 'none' : '';
+  if (ctrlRow) ctrlRow.style.display = (m === 'recent' || m === 'model' || m === 'memo') ? 'none' : '';
   const nav = document.getElementById('kanaNav');
-  if (nav) nav.style.display = (m === 'recent' || m === 'model' || m === 'all') ? 'none' : '';
+  if (nav) nav.style.display = (m === 'recent' || m === 'model' || m === 'all' || m === 'memo') ? 'none' : '';
   srcFilter = new Set();
   const srcFiltersEl = document.getElementById('srcFilters');
   if (srcFiltersEl) srcFiltersEl.style.display = (m === 'kagu') ? 'contents' : 'none';
   buildSrcFilters();
   const catTabs = document.getElementById('catTabs');
-  if (catTabs) catTabs.style.display = (m === 'recent' || m === 'all') ? 'none' : '';
+  if (catTabs) catTabs.style.display = (m === 'recent' || m === 'all' || m === 'memo') ? 'none' : '';
   window.scrollTo({ top: 0, behavior: 'instant' });
-  if (m !== 'recent' && m !== 'model') {
+  if (m !== 'recent' && m !== 'model' && m !== 'memo') {
     const items = DATA[m];
     Object.keys(items).forEach(cat => { state[m].doneOpen[cat] = true; });
     save();
@@ -2283,6 +2341,7 @@ function render() {
   if (mode === 'recent') { renderRecent(); return; }
   if (mode === 'all') { renderAll(); return; }
   if (mode === 'model') { renderModel(); return; }
+  if (mode === 'memo') { renderMemo(); return; }
   isViewing = !!(viewingUser && viewingUser !== currentUser);
   renderTabs();
   const items = DATA[mode];
@@ -3109,6 +3168,82 @@ function initUser() {
   }
 }
 initUser();
+
+// ===== メモ帳 =====
+const MEMO_KEY = 'acnh_memo_v1';
+
+function loadMemos() {
+  try { return JSON.parse(localStorage.getItem(MEMO_KEY) || '[]'); } catch { return []; }
+}
+function saveMemos(memos) {
+  localStorage.setItem(MEMO_KEY, JSON.stringify(memos));
+}
+
+function renderMemo() {
+  const main = document.getElementById('main');
+  const memos = loadMemos();
+  main.innerHTML = '';
+  const area = document.createElement('div');
+  area.className = 'memo-area';
+
+  memos.forEach((memo, idx) => {
+    const card = document.createElement('div');
+    card.className = 'memo-card';
+    card.innerHTML = `
+      <div class="memo-card-header">
+        <input class="memo-card-title-input" placeholder="タイトル（任意）"
+          value="${escHtml(memo.title || '')}"
+          oninput="updateMemoTitle(${idx}, this.value)">
+        <button class="memo-card-del" onclick="deleteMemo(${idx})" title="削除">✕</button>
+      </div>
+      <div class="memo-card-body">
+        <textarea class="memo-textarea" placeholder="メモを入力..."
+          oninput="updateMemoBody(${idx}, this.value)">${escHtml(memo.body || '')}</textarea>
+      </div>`;
+    area.appendChild(card);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'memo-add-btn';
+  addBtn.textContent = '＋ メモを追加';
+  addBtn.onclick = addMemo;
+  area.appendChild(addBtn);
+
+  main.appendChild(area);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function addMemo() {
+  const memos = loadMemos();
+  memos.push({ title: '', body: '' });
+  saveMemos(memos);
+  renderMemo();
+  // 新しいカードのtextareaにフォーカス
+  setTimeout(() => {
+    const areas = document.querySelectorAll('.memo-textarea');
+    if (areas.length) areas[areas.length - 1].focus();
+  }, 50);
+}
+
+function deleteMemo(idx) {
+  const memos = loadMemos();
+  memos.splice(idx, 1);
+  saveMemos(memos);
+  renderMemo();
+}
+
+function updateMemoTitle(idx, val) {
+  const memos = loadMemos();
+  if (memos[idx]) { memos[idx].title = val; saveMemos(memos); }
+}
+
+function updateMemoBody(idx, val) {
+  const memos = loadMemos();
+  if (memos[idx]) { memos[idx].body = val; saveMemos(memos); }
+}
 </script>
 </body>
 </html>
