@@ -2687,7 +2687,7 @@ function toHiraKey(s) {
 }
 // 五十音順 → 英語 → 数字
 function sortByKana(a, b) {
-  const rank = s => /^[0-9]/.test(s) ? 2 : /^[A-Za-z]/.test(s) ? 1 : 0;
+  const rank = s => /^[0-9０-９]/.test(s) ? 2 : /^[A-Za-zＡ-Ｚａ-ｚ]/.test(s) ? 1 : 0;
   const ra = rank(a.ja), rb = rank(b.ja);
   if (ra !== rb) return ra - rb;
   return toHiraKey(a.ja).localeCompare(toHiraKey(b.ja), 'ja');
