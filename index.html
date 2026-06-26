@@ -2635,6 +2635,46 @@ function jumpToKana(chars, btn) {
   setTimeout(() => btn.classList.remove('hit'), 600);
 }
 
+// ローマ字→ひらがな変換
+function romajiToHira(s) {
+  const tbl = [
+    ['sha','し'],['shi','し'],['chi','ち'],['tsu','つ'],['tchi','っち'],
+    ['tta','った'],['tto','っと'],['tte','って'],['kka','っか'],['kki','っき'],
+    ['kku','っく'],['kke','っけ'],['kko','っこ'],['ppa','っぱ'],['ppi','っぴ'],
+    ['ppu','っぷ'],['ppe','っぺ'],['ppo','っぽ'],['ssa','っさ'],['ssi','っし'],
+    ['shu','しゅ'],['sho','しょ'],['sha','しゃ'],['she','しぇ'],
+    ['chi','ち'],['chu','ちゅ'],['cho','ちょ'],['cha','ちゃ'],
+    ['kya','きゃ'],['kyu','きゅ'],['kyo','きょ'],
+    ['nya','にゃ'],['nyu','にゅ'],['nyo','にょ'],
+    ['mya','みゃ'],['myu','みゅ'],['myo','みょ'],
+    ['rya','りゃ'],['ryu','りゅ'],['ryo','りょ'],
+    ['hya','ひゃ'],['hyu','ひゅ'],['hyo','ひょ'],
+    ['gya','ぎゃ'],['gyu','ぎゅ'],['gyo','ぎょ'],
+    ['bya','びゃ'],['byu','びゅ'],['byo','びょ'],
+    ['pya','ぴゃ'],['pyu','ぴゅ'],['pyo','ぴょ'],
+    ['ja','じゃ'],['ji','じ'],['ju','じゅ'],['jo','じょ'],
+    ['ka','か'],['ki','き'],['ku','く'],['ke','け'],['ko','こ'],
+    ['sa','さ'],['si','し'],['su','す'],['se','せ'],['so','そ'],
+    ['ta','た'],['ti','ち'],['tu','つ'],['te','て'],['to','と'],
+    ['na','な'],['ni','に'],['nu','ぬ'],['ne','ね'],['no','の'],
+    ['ha','は'],['hi','ひ'],['fu','ふ'],['hu','ふ'],['he','へ'],['ho','ほ'],
+    ['ma','ま'],['mi','み'],['mu','む'],['me','め'],['mo','も'],
+    ['ya','や'],['yu','ゆ'],['yo','よ'],
+    ['ra','ら'],['ri','り'],['ru','る'],['re','れ'],['ro','ろ'],
+    ['wa','わ'],['wi','ゐ'],['we','ゑ'],['wo','を'],
+    ['ga','が'],['gi','ぎ'],['gu','ぐ'],['ge','げ'],['go','ご'],
+    ['za','ざ'],['zi','じ'],['zu','ず'],['ze','ぜ'],['zo','ぞ'],
+    ['da','だ'],['di','ぢ'],['du','づ'],['de','で'],['do','ど'],
+    ['ba','ば'],['bi','び'],['bu','ぶ'],['be','べ'],['bo','ぼ'],
+    ['pa','ぱ'],['pi','ぴ'],['pu','ぷ'],['pe','ぺ'],['po','ぽ'],
+    ['a','あ'],['i','い'],['u','う'],['e','え'],['o','お'],
+    ['n','ん'],
+  ];
+  let r = s.toLowerCase();
+  for (const [rom, hira] of tbl) r = r.split(rom).join(hira);
+  return r;
+}
+
 // カタカナ→ひらがな変換 + 長音符除去（辞書準拠: か≠が、カ=か）
 function normalizeDakuten(s) {
   return [...s.toLowerCase()].map(c => {
@@ -2652,12 +2692,13 @@ function matchSearch(ja, en, q) {
   const nq  = normalizeDakuten(q.toLowerCase());
   const nja = normalizeDakuten(ja.toLowerCase());
   const nen = en.toLowerCase();
-  // 漢字を除いたかな部分だけのクエリ（「カップ麺」→「カップ」）
   const kanaQ = normalizeDakuten(q.replace(/[\u4E00-\u9FFF\u3400-\u4DBF々〆〇]+/g, '').toLowerCase());
+  const isRomaji = /^[a-z]+$/i.test(q.trim());
+  const romaQ = isRomaji ? normalizeDakuten(romajiToHira(q.toLowerCase())) : '';
   if (partialMatch) {
-    return nja.includes(nq) || nen.includes(q) || (kanaQ && nja.includes(kanaQ));
+    return nja.includes(nq) || nen.includes(q.toLowerCase()) || (kanaQ && nja.includes(kanaQ)) || (romaQ && nja.includes(romaQ));
   } else {
-    return nja.startsWith(nq) || nen.startsWith(q) || (kanaQ && nja.startsWith(kanaQ));
+    return nja.startsWith(nq) || nen.startsWith(q.toLowerCase()) || (kanaQ && nja.startsWith(kanaQ)) || (romaQ && nja.startsWith(romaQ));
   }
 }
 
