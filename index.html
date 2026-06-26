@@ -2130,7 +2130,7 @@ function switchMode(m) {
   const catTabs = document.getElementById('catTabs');
   if (catTabs) catTabs.style.display = (m === 'recent' || m === 'all' || m === 'memo') ? 'none' : '';
   window.scrollTo({ top: 0, behavior: 'instant' });
-  if (m !== 'recent' && m !== 'model' && m !== 'memo') {
+  if (m !== 'recent' && m !== 'model' && m !== 'memo' && m !== 'all') {
     const items = DATA[m];
     Object.keys(items).forEach(cat => { state[m].doneOpen[cat] = true; });
     save();
