@@ -1230,7 +1230,7 @@ function initSupabase(cb) { if (cb) cb(); }
 let currentUser = localStorage.getItem('acnh_username') || '';
 let syncTimer = null;
 
-let mode = 'kagu';
+let mode = localStorage.getItem('acnh_last_mode') || 'kagu';
 let state = { kagu: { owned: {}, doneOpen: {} }, recipe: { owned: {}, doneOpen: {} }, music: { owned: {}, doneOpen: {} }, art: { owned: {}, doneOpen: {} }, fuku: { owned: {}, doneOpen: {} }, hhp: { owned: {}, doneOpen: {} }, fossil: { owned: {}, doneOpen: {} } };
 let currentCat = { kagu: 'すべて', recipe: 'すべて', music: 'すべて', art: 'すべて', fuku: 'すべて', hhp: 'すべて', fossil: 'すべて', model: 'むし' };
 let search = '', partialMatch = true, searchScope = 'todo', srcFilter = new Set(), sortOrder = 'kana';
@@ -2102,6 +2102,7 @@ function showSupabaseHelp() {
 
 function switchMode(m) {
   mode = m;
+  localStorage.setItem('acnh_last_mode', m);
   search = '';
   document.getElementById('searchInput').value = '';
   searchClear.style.display = 'none';
@@ -2130,6 +2131,7 @@ function switchMode(m) {
   buildSrcFilters();
   const catTabs = document.getElementById('catTabs');
   if (catTabs) catTabs.style.display = (m === 'recent' || m === 'all' || m === 'memo') ? 'none' : '';
+  localStorage.setItem('acnh_scroll_' + mode, '0');
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (m !== 'recent' && m !== 'model' && m !== 'memo' && m !== 'all') {
     const items = DATA[m];
@@ -3152,6 +3154,10 @@ function renderRecent() {
   main.appendChild(sec);
 }
 
+window.addEventListener('pagehide', () => {
+  localStorage.setItem('acnh_scroll_' + mode, String(window.scrollY));
+});
+
 function startApp() {
   load();
   buildSyncSets();
@@ -3164,6 +3170,10 @@ function startApp() {
     if (cached.length) renderUserSwitcher(cached);
   } catch {}
   render();
+  requestAnimationFrame(() => {
+    const savedY = parseInt(localStorage.getItem('acnh_scroll_' + mode) || '0', 10);
+    if (savedY > 0) window.scrollTo({ top: savedY, behavior: 'instant' });
+  });
   initSupabase(() => {
     if (currentUser) {
       const ov = document.getElementById('cloudLoadOverlay');
